@@ -211,10 +211,12 @@ int main(){
 	al_register_event_source(queue, al_get_display_event_source(disp));																																		//Indica que eventos de tela serão inseridos na nossa fila de eventos
 	al_register_event_source(queue, al_get_timer_event_source(timer));																																		//Indica que eventos de relógio serão inseridos na nossa fila de eventos
 
-	if(menu(X_SCREEN, Y_SCREEN)){																																													//Chama a função que exibe o menu inicial do jogo
+
+	printf("antes do menu\n");
+	if(menu(disp, X_SCREEN, Y_SCREEN)){																																													//Chama a função que exibe o menu inicial do jogo
 
 
-
+	printf("passei do menu\n");
 
 	square* player_1 = square_create(20, 1, 10, Y_SCREEN/2, X_SCREEN, Y_SCREEN);																															//Cria o quadrado do primeiro jogador
 	if (!player_1) return 1;																																												//Verificação de erro na criação do quadrado do primeiro jogador
@@ -240,18 +242,15 @@ int main(){
 		fprintf(stderr, "Failed to load background image!\n");
 		return -1;
 	} else {
-    // >>> Adicione estas linhas:
     int w = al_get_bitmap_width(background);
     int h = al_get_bitmap_height(background);
     fprintf(stderr, "Background carregado: Dimensões %dx%d\n", w, h);
-    // <<<
   }
 	
 	while(1){																																																//Laço servidor do jogo
 		al_wait_for_event(queue, &event);																																									//Função que captura eventos da fila, inserindo os mesmos na variável de eventos
 
 		if (p1k || p2k){																																													//Verifica se algum jogador foi morto 																																						//Limpe a tela atual para um fundo preto
-			
 			al_draw_bitmap(background, 0, 0, 0);	
 			if (p2k && p1k) al_draw_text(font, al_map_rgb(255, 255, 255), X_SCREEN/2 - 40, Y_SCREEN/2-15, 0, "EMPATE!");																					//Se ambos foram mortos, declare um empate
 			else if (p2k) al_draw_text(font, al_map_rgb(255, 0, 0), X_SCREEN/2 - 75, Y_SCREEN/2-15, 0, "JOGADOR 1 GANHOU!");																				//Se o segundo jogador morreu, declare o primeiro jogador vencedor
@@ -299,6 +298,7 @@ int main(){
 		}
 	}
 
+	al_destroy_bitmap(background);
 	al_destroy_font(font);																																													//Destrutor da fonte padrão
 	al_destroy_display(disp);																																												//Destrutor da tela
 	al_destroy_timer(timer);																																												//Destrutor do relógio
