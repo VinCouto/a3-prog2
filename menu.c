@@ -65,24 +65,46 @@ int menu(ALLEGRO_DISPLAY* disp, unsigned int X_SCREEN, unsigned int Y_SCREEN){
   
     printf("state_menu: %d\n", state_menu);
     
-    if(state_menu == 0){
+    if(state_menu == 1){
       //al_draw_text(al_create_builtin_font(), al_map_rgb(255, 0, 0), X_SCREEN / 2, Y_SCREEN - 100, ALLEGRO_ALIGN_CENTRE, "PRESS ENTER TO START");
-      al_draw_rectangle(20, 320, 350, 380, al_map_rgb(255, 0, 0),10);
+      al_draw_rectangle(20, 320, 350, 380, al_map_rgb(255, 0, 0),5);
+      al_flip_display();
+      al_draw_rectangle(20, 320, 350, 380, al_map_rgb(255, 117, 20),5);
       al_flip_display();
     }
 
 
+    if(state_menu == 2){
+      //al_draw_text(al_create_builtin_font(), al_map_rgb(255, 0, 0), X_SCREEN / 2, Y_SCREEN - 50, ALLEGRO_ALIGN_CENTRE, "PRESS ESCAPE TO EXIT");
+      al_draw_rectangle(20, 420, 350, 480, al_map_rgb(255, 0, 0),5);
+      al_flip_display();
+      al_draw_rectangle(20, 420, 350, 480, al_map_rgb(255, 117, 20),5);
+      al_flip_display();
+    }
 
+    if(state_menu == 3){
+      al_draw_rectangle(20, 550, 350, 620, al_map_rgb(255, 0, 0),5);
+      al_flip_display();
+      al_draw_rectangle(20, 550, 350, 620, al_map_rgb(255, 0, 0),5);
+      al_flip_display();
+    }
+
+    if(state_menu > 3){
+      state_menu = 1;
+    }
+    
+    if(state_menu < 1){
+      state_menu = 3;
+    }
 
 
     if(event.type == 10 && (event.keyboard.keycode == ALLEGRO_KEY_ENTER || event.keyboard.keycode == ALLEGRO_KEY_PAD_ENTER)){ //ALLEGRO_EVENT_KEY_DOWN 59 é o código para ALLEGRO_KEY_ENTER 
-        state_menu = 1;
         printf("APERTEI ENTER\n"); 
         // 1 é o código para ALLEGRO_KEY_ESCAPE
-        return 1;
+        return state_menu;
      }else if (event.keyboard.keycode == 59){
-      state_menu = 2; // ALLEGRO_KEY_ESCAPE
       printf("APERTEI ESCAPE\n");
+      break;
      }else if (event.type == 42) { // ALLEGRO_EVENT_DISPLAY_CLOSE
         break;
     }
