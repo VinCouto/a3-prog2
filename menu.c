@@ -51,7 +51,7 @@ int menu(ALLEGRO_DISPLAY* disp, unsigned int X_SCREEN, unsigned int Y_SCREEN){
     al_wait_for_event(queue, &event);
 
     al_draw_bitmap(menu_image, 0, 0, 0);
-    
+
 
     
     
