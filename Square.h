@@ -12,6 +12,7 @@ typedef struct {																																	//Definição da estrutura de u
 	unsigned char hp;																																//Quantidade de vida do quadrado, em unidades (!)
 	unsigned short x;																																//Posição X do centro do quadrado
 	unsigned short y;																															//Posição Y do centro do quadrado
+	unsigned short idle;
 	joystick *control;																																//Elemento de controle do quadrado no jogo
 } square;																																			//Definição do nome da estrutura
 

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "Square.h"
 
 square* square_create(int heigth, int width, unsigned char face, unsigned short x, unsigned short y, unsigned short max_x, unsigned short max_y){			//Implementação da função "square_create"
@@ -14,6 +15,7 @@ square* square_create(int heigth, int width, unsigned char face, unsigned short 
 	new_square->hp = 5;																																	//Insere o total de pontos de vida de um quadrado (!)
 	new_square->x = x;																																	//Insere a posição inicial central de X
 	new_square->y = y;																																	//Insere a posição inicial central de Y
+	new_square->idle = 0;
 	new_square->control = joystick_create();																											//Insere o elemento de controle do quadrado
 	return new_square;																																	//Retorna o novo quadrado
 }
@@ -25,13 +27,21 @@ void square_move(square *element, char steps, unsigned char trajectory, unsigned
 	else if (trajectory == 2){ if ((element->y - steps*SQUARE_STEP) - element->heigth/2 >= 0) element->y = element->y - steps*SQUARE_STEP;}				//Verifica se a movimentação para cima é desejada e possível; se sim, efetiva a mesma
 	else if (trajectory == 3){ if ((element->y + steps*SQUARE_STEP) + element->heigth/2 <= max_y) element->y = element->y + steps*SQUARE_STEP;}			//Verifica se a movimentação para baixo é desejada e possível; se sim, efetiva a mesma
 	else if (trajectory == 4 ){
-		if(element->control->ctr == 0){
-			element->heigth = element->heigth/2; //posição agachada do personagem
-			element->width = element->width * 2;
-		} else 
+		if(element->idle == 1) {
+			printf("levantando\n");
+			element->heigth = element->heigth * 2;
+			element->idle = 0;
 			element->control->ctr = 0;
-			
-	}
+			return;
+		} else if(element->control->ctr == 1){
+			printf("%d\n", element->idle);
+			printf("agachando\n");
+			element->heigth = element->heigth / 2;
+			element->idle = 1;
+			element->control->ctr = 0;
+			}  
+		}
+
 }
 
 void square_destroy(square *element){																													//Implementação da função "square_destroy"

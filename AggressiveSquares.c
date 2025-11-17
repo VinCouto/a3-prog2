@@ -248,7 +248,7 @@ int main(){
 						else if (event.keyboard.keycode == 83) joystick_right(player_2->control);																													//Indica o evento correspondente no controle do segundo jogador (botão de movimentação à direita)
 						else if (event.keyboard.keycode == 84) joystick_up(player_2->control);																														//Indica o evento correspondente no controle do segundo jogador (botão de movimentação para cima)
 						else if (event.keyboard.keycode == 85) joystick_down(player_2->control);																													//Indica o evento correspondente no controle do segundo jogador (botão de movimentação para baixo)
-						else if (event.keyboard.keycode == ALLEGRO_KEY_LCTRL) joystick_ctr(player_1->control);
+						if (event.keyboard.keycode == 217) joystick_ctr(player_1->control);
 					}																																			
 					else if (event.type == 42) break;																																								//Evento de clique no "X" de fechamento da tela. Encerra o programa graciosamente.
 				}
