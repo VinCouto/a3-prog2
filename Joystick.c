@@ -1,5 +1,7 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "Joystick.h"
+#include "Square.h"
 
 joystick* joystick_create(){														//Implementação da função "joystick_create"
 
@@ -23,4 +25,6 @@ void joystick_up(joystick *element){ element->up = element->up ^ 1;}				//Implem
 
 void joystick_down(joystick *element){ element->down = element->down ^ 1;}			//Implementação da função "joystick_down"; muda o estado do botão
 
-void joystick_ctr(joystick *element){ element->ctr = 1;}							// Implementando agachar
+void joystick_ctr(joystick *element){ 							// Implementando agachar
+	element->ctr = 1;
+} 
