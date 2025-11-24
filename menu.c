@@ -1,11 +1,4 @@
-#include <allegro5/allegro5.h>																																											//Biblioteca base do Allegro
-#include <allegro5/allegro_font.h>																																										//Biblioteca
-#include <allegro5/allegro_primitives.h>																																								//Biblioteca de figuras básicas
-#include <allegro5/allegro_image.h>
-#include <stdio.h> 
-#include <stdlib.h>
-
-#include "Square.h"
+#include "menu.h"
 
 
 

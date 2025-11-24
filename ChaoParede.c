@@ -6,9 +6,7 @@
 #include <stdlib.h>
 
 #include "Square.h"
-#include "menu.c"
 #include "ChaoParede.h"
-#include "AggressiveSquares.c"
 
 #define X_SCREEN 920
 #define Y_SCREEN 640
