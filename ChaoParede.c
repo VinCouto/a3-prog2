@@ -23,23 +23,33 @@ wall* wall_create(unsigned short width, unsigned short height, unsigned short po
     return new_wall;
 } 
 
+void wall_draw(wall* element, float camera_x, float camera_y){
+    float wall_screen_x = element->pos_x - camera_x;
+    float wall_screen_y = element->pos_y - camera_y;
+
+    al_draw_filled_rectangle(
+        wall_screen_x - element->width/2, 
+        wall_screen_y - element->height/2, 
+        wall_screen_x + element->width/2, 
+        wall_screen_y + element->height/2, 
+        al_map_rgb(0, 255, 255)
+    );
+    printf("desenhando parede em x: %.2f y: %.2f\n", wall_screen_x, wall_screen_y);
+}
 
 // Função para verificar colisão entre PLAYER (Square) e PAREDE (Wall)
 int check_collision_wall(square *player, wall *w) {
     
-    // 1. Definir as bordas do Player (usando heigth com th do seu código)
     int p_esq   = player->x - player->width/2;
     int p_dir   = player->x + player->width/2;
     int p_cima  = player->y - player->heigth/2;
     int p_baixo = player->y + player->heigth/2;
 
-    // 2. Definir as bordas da Parede (usando height correto do ChaoParede.c)
     int w_esq   = w->pos_x - w->width/2;
     int w_dir   = w->pos_x + w->width/2;
     int w_cima  = w->pos_y - w->height/2;
     int w_baixo = w->pos_y + w->height/2;
 
-    // 3. Lógica AABB (Axis-Aligned Bounding Box)
     // Se todas as condições forem verdadeiras, existe sobreposição (colisão)
     if (p_dir > w_esq &&    // Player cruza borda esquerda da parede
         p_esq < w_dir &&    // Player cruza borda direita da parede

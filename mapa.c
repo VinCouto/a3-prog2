@@ -3,7 +3,7 @@
 
 ALLEGRO_BITMAP* map_create(){
     
-    ALLEGRO_BITMAP* background = al_load_bitmap("castelin.jpeg");
+    ALLEGRO_BITMAP* background = al_load_bitmap("teste.png");
     
     if (!background) {
         fprintf(stderr, "Failed to load background image!\n");

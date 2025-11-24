@@ -16,8 +16,8 @@
 #define Y_SCREEN 640																																														//Definição do tamanho da tela em pixels no eixo y
 
 
-#define X_BACKGROUND 1080																																													//Definição do tamanho da tela em pixels no eixo x
-#define Y_BACKGROUND 607																																													//Definição do tamanho da tela em
+#define X_BACKGROUND 4800																																													//Definição do tamanho da tela em pixels no eixo x
+#define Y_BACKGROUND 1280																																													//Definição do tamanho da tela em
 
 
 
@@ -94,7 +94,7 @@ void update_position(square *player_1){																																					//Fu
 		player_1->vy = -18.0f; // Aplica a força do pulo
 		player_1->idle = 2;    // Define o estado como "No Ar"
 	}
-	square_apply_physics(player_1, 500);
+	square_apply_physics(player_1, 1280);
 	printf("idle: %u\n", player_1->idle);
 }
 
@@ -191,21 +191,23 @@ int main(){
 			enemy->face = 0;																																														//Define a face do inimigo (não usada)
 
 
-			wall* platform = wall_create(30, 20, X_SCREEN/2, 400);																																				//Cria uma plataforma para o jogador pular em cima
+	
 
 			ALLEGRO_EVENT event;																																													//Variável que guarda um evento capturado, sua estrutura é definida em: https:		//www.allegro.cc/manual/5/ALLEGRO_EVENT
 			al_start_timer(timer);																																													//Função que inicializa o relógio do programa
 			unsigned char p1k = 0;																																											//Variáveis de controle de vida dos quadrados (jogadores)
 			
 			ALLEGRO_BITMAP* background = NULL;	
-			background = map_create();
-			
-		
+			background = map_create();	
 			if (!background) {
 				fprintf(stderr, "Failed to load background image!\n");
 				return -1;
 			}
 			
+
+			wall* platform = wall_create(1700, 600, 850, 1280);																																				//Cria uma plataforma para o jogador pular em cima
+
+
 			int map_width = al_get_bitmap_width(background); // Pega a largura real do mapa
 			int map_height = al_get_bitmap_height(background); // Pega a altura real do mapa
 			
@@ -219,7 +221,7 @@ int main(){
 			while(1){																																																//Laço servidor do jogo
 				al_wait_for_event(queue, &event);																																									//Função que captura eventos da fila, inserindo os mesmos na variável de eventos
 
-				player_1->vy += 1.0f;
+				player_1->vy += 0.7f;
 				player_1->y += player_1->vy;
 
 				if (check_collision_wall(player_1, platform)) {
@@ -277,6 +279,8 @@ int main(){
 						update_position(player_1);																																						//Atualiza a posição dos jogadores
 						
 						p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
+
+						wall_draw(platform, 0, 0);																																												//Desenha a plataforma na tela
 
 
 						if(update_enemy(enemy, player_1, font))																																						//Atual

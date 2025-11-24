@@ -4,7 +4,7 @@
 #include "Joystick.h"																																//Estrutura e procedimentos relacionados ao controle do quadrado
 
 #define SQUARE_STEP 10																																//Tamanho, em pixels, de um passo do quadrado
-#define GRAVIDADE 1.0f     // Quanto a velocidade aumenta para baixo a cada frame
+#define GRAVIDADE 0.7f     // Quanto a velocidade aumenta para baixo a cada frame
 #define FORCA_PULO -15.0f  // Velocidade instantânea para cima (negativa pois Y cresce para baixo)
 #define CHAO_Y 500         // A altura Y onde fica o chão (por enquanto, fixo)
 
