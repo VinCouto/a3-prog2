@@ -7,13 +7,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "mapa.h"																																												//Inclusão da biblioteca de quadrados
 #include "Square.h"		
-#include "menu.c"																																													//Inclusão da biblioteca de quadrados
 #include "ChaoParede.h"
+#include "menu.h"	
 
 #define X_SCREEN 920																																														//Definição do tamanho da tela em pixels no eixo x
 #define Y_SCREEN 640																																														//Definição do tamanho da tela em pixels no eixo y
 
+
+#define X_BACKGROUND 1080																																													//Definição do tamanho da tela em pixels no eixo x
+#define Y_BACKGROUND 607																																													//Definição do tamanho da tela em
 
 
 
@@ -22,19 +26,15 @@ void update_life(square* victim, ALLEGRO_FONT* font, ALLEGRO_BITMAP* background)
 		al_draw_text(font, al_map_rgb(255,255,255), 100, 75, 0, "HP = 5");																				//Se o segundo jogador morreu, declare o primeiro jogador vencedor
 	} else {	
 		if(victim->hp == 4){
-			al_draw_bitmap(background, 0, 0, 0);	
 			al_draw_text(font, al_map_rgb(255,255,255), 100, 75, 0, "HP = 4");
 		} else {
 			if(victim->hp == 3){
-				al_draw_bitmap(background, 0, 0, 0);	
 				al_draw_text(font, al_map_rgb(255,255,255), 100, 75, 0, "HP = 3");
 			} else {
 				if(victim->hp == 2){
-					al_draw_bitmap(background, 0, 0, 0);	
 					al_draw_text(font, al_map_rgb(255,255,255), 100, 75, 0, "HP = 2");
 				} else {
 					if(victim->hp == 1){
-						al_draw_bitmap(background, 0, 0, 0);	
 						al_draw_text(font, al_map_rgb(255,255,255), 100, 75, 0, "HP = 1");
 					}
 				}
@@ -65,25 +65,21 @@ unsigned char check_kill(square *victim){																																					//
 
 
 
-void update_position(square *player_1, square *player_2){																																					//Função de atualização das posições dos quadrados conforme os comandos do controle
+void update_position(square *player_1){																																					//Função de atualização das posições dos quadrados conforme os comandos do controle
 
-	if (player_1->control->left){																																											//Se o botão de movimentação para esquerda do controle do primeiro jogador está ativado...
-		square_move(player_1, 1, 0, X_SCREEN, Y_SCREEN);																																					//Move o quadrado do primeiro jogador para a esquerda
-		if (collision_2D(player_1, player_2)) square_move(player_1, -1, 0, X_SCREEN, Y_SCREEN);																												//Se o movimento causou uma colisão entre quadrados, desfaça o mesmo
-	}
-	if (player_1->control->right){																																											//Se o botão de movimentação para direita do controle do primeir ojogador está ativado...
-		square_move(player_1, 1, 1, X_SCREEN, Y_SCREEN);																																					//Move o quadrado do primeiro jogador para a direta
-		if (collision_2D(player_1, player_2)) square_move(player_1, -1, 1, X_SCREEN, Y_SCREEN);																												//Se o movimento causou uma colisão entre quadrados, desfaça o mesmo
-	}
+	if (player_1->control->left)																																											//Se o botão de movimentação para esquerda do controle do primeiro jogador está ativado...
+		square_move(player_1, 1, 0, X_BACKGROUND, Y_BACKGROUND);																																					//Move o quadrado do primeiro jogador para a esquerda	}
+	if (player_1->control->right)																																											//Se o botão de movimentação para direita do controle do primeir ojogador está ativado...
+		square_move(player_1, 1, 1, X_BACKGROUND, Y_BACKGROUND);																																					//Move o quadrado do primeiro jogador para a direta
+	
 
 	if (player_1->control->down){																																											//Se o botão de movimentação para baixo do controle do primeiro jogador está ativado...
 		printf("movendo para baixo\n");
-		square_move(player_1, 1, 3, X_SCREEN, Y_SCREEN);																																					//Move o quadrado do primeiro jogador para a baixo
-		if (collision_2D(player_1, player_2)) square_move(player_1, -1, 3, X_SCREEN, Y_SCREEN);																												//Se o movimento causou uma colisão entre quadrados, desfaça o mesmo
+		square_move(player_1, 1, 3, X_BACKGROUND, Y_BACKGROUND);																																					//Move o quadrado do primeiro jogador para a baixo
 	}
 
 	if(player_1->control->ctr){
-		square_move(player_1, 1, 4, X_SCREEN, Y_SCREEN);
+		square_move(player_1, 1, 4, X_BACKGROUND, Y_BACKGROUND);
 	}
 
 	if (player_1->control->up && player_1->idle != 2) {
@@ -111,8 +107,19 @@ int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){										
 		sprintf(hp_str, "%d", enemy->hp);
 		al_draw_text(font, al_map_rgb(255,255,255), 500, 75, 0, hp_str);
 
-		if(collision_2D(enemy, player_1))
+		if(collision_2D(enemy, player_1)){
+
+			if (player_1->x < enemy->x) {
+					player_1->x -= 20; // Empurra para esquerda
+					player_1->vy = -5; // Dá um pulinho
+				} else {
+					player_1->x += 20; // Empurra para direita
+					player_1->vy = -5;
+				}
 			player_1->hp--;
+
+		}
+			
 
 		if(check_kill(enemy))
 			enemy->hp--;
@@ -122,7 +129,7 @@ int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){										
 		int trajetory = (rand()%4);
 		int move = rand()%6;
 		if(!move)
-			square_move(enemy,steps, trajetory, X_SCREEN, Y_SCREEN);
+			square_move(enemy,steps, trajetory, X_BACKGROUND, Y_BACKGROUND);
 
 		if(enemy->hp == 0)
 			return 0;
@@ -184,52 +191,54 @@ int main(){
 			enemy->face = 0;																																														//Define a face do inimigo (não usada)
 
 
-			wall* platform = wall_create(300, 20, X_SCREEN/2, 400);																																				//Cria uma plataforma para o jogador pular em cima
+			wall* platform = wall_create(30, 20, X_SCREEN/2, 400);																																				//Cria uma plataforma para o jogador pular em cima
 
 			ALLEGRO_EVENT event;																																													//Variável que guarda um evento capturado, sua estrutura é definida em: https:		//www.allegro.cc/manual/5/ALLEGRO_EVENT
 			al_start_timer(timer);																																													//Função que inicializa o relógio do programa
-			unsigned char p1k = 0, p2k = 0;																																											//Variáveis de controle de vida dos quadrados (jogadores)
+			unsigned char p1k = 0;																																											//Variáveis de controle de vida dos quadrados (jogadores)
 			
-			ALLEGRO_BITMAP* background = NULL;
-			background = al_load_bitmap("fundocerto.png");
+			ALLEGRO_BITMAP* background = NULL;	
+			background = map_create();
+			
+		
 			if (!background) {
 				fprintf(stderr, "Failed to load background image!\n");
 				return -1;
-			} else {
-				int w = al_get_bitmap_width(background);
-				int h = al_get_bitmap_height(background);
-				fprintf(stderr, "Background carregado: Dimensões %dx%d\n", w, h);
 			}
 			
+			int map_width = al_get_bitmap_width(background); // Pega a largura real do mapa
+			int map_height = al_get_bitmap_height(background); // Pega a altura real do mapa
+			
+			float camera_x = 0; // Inicializa a posição da câmera
+			float camera_y = 0; // Inicializa a posição da câmera
+
+			//al_start_timer(timer);																																													//Inicia o relógio do jogo
+			//al_flush_event_queue(queue);
+
+
 			while(1){																																																//Laço servidor do jogo
 				al_wait_for_event(queue, &event);																																									//Função que captura eventos da fila, inserindo os mesmos na variável de eventos
 
 				player_1->vy += 1.0f;
 				player_1->y += player_1->vy;
 
-				// 2. Checa se bateu na parede/chão
 				if (check_collision_wall(player_1, platform)) {
 					
-					// Se estava caindo (vy > 0), bateu em cima da plataforma (aterrissou)
 					if (player_1->vy > 0) {
-						// Coloca o player exatamente em cima da parede
-						// Cálculo: Posição Y da parede - Metade da Altura da Parede - Metade da Altura do Player
 						player_1->y = (platform->pos_y - platform->height/2) - player_1->heigth/2;
 						
 						player_1->vy = 0;    // Para de cair
 						player_1->idle = 0;  // Estado: Em pé (no chão)
 					}
-					// Se estava subindo (vy < 0), bateu a cabeça na plataforma
 					else if (player_1->vy < 0) {
 						player_1->y = (platform->pos_y + platform->height/2) + player_1->heigth/2;
 						player_1->vy = 0; // Bateu a cabeça, velocidade zera e começa a cair
 					}
 
-
-				if (p1k || p2k){																																													//Verifica se algum jogador foi morto 																																						//Limpe a tela atual para um fundo preto
+				}
+				if (p1k){																																													//Verifica se algum jogador foi morto 																																						//Limpe a tela atual para um fundo preto
 					al_draw_bitmap(background, 0, 0, 0);	
-					if (p2k && p1k) al_draw_text(font, al_map_rgb(255, 255, 255), X_SCREEN/2 - 40, Y_SCREEN/2-15, 0, "EMPATE!");																					//Se ambos foram mortos, declare um empate
-					else if (p2k) al_draw_text(font, al_map_rgb(255, 0, 0), X_SCREEN/2 - 75, Y_SCREEN/2-15, 0, "JOGADOR 1 GANHOU!");																				//Se o segundo jogador morreu, declare o primeiro jogador vencedor
+					if (p1k) al_draw_text(font, al_map_rgb(255, 255, 255), X_SCREEN/2 - 40, Y_SCREEN/2-15, 0, "EMPATE!");																					//Se ambos foram mortos, declare um empate
 					else if (p1k) al_draw_text(font, al_map_rgb(0, 0, 255), X_SCREEN/2 - 75, Y_SCREEN/2-15, 0, "JOGADOR 2 GANHOU!");																				//Se o primeiro jogador morreu, declare o segundo jogador vencedor
 					al_draw_text(font, al_map_rgb(255, 255, 255), X_SCREEN/2 - 110, Y_SCREEN/2+5, 0, "PRESSIONE ESPAÇO PARA SAIR");																					//Indique o modo de conclusão do programa
 					al_flip_display();																																												//Atualiza a tela
@@ -239,9 +248,33 @@ int main(){
 				}
 				else{																																																//Se nenhum quadrado morreu
 					if (event.type == 30){																																											//O evento tipo 30 indica um evento de relógio, ou seja, verificação se a tela deve ser atualizada (conceito de FPS)	
-						al_draw_bitmap(background, 0, 0, 0);	
+						
+						camera_x = player_1->x - X_SCREEN / 2;
+						camera_y = player_1->y - Y_SCREEN / 2;
+
+						// Limite Esquerdo e Superior
+						if (camera_x < 0) camera_x = 0;
+						if (camera_y < 0) camera_y = 0;
+
+						// Limite Direito e Inferior
+						if (camera_x > map_width - X_SCREEN) camera_x = map_width - X_SCREEN;
+						if (camera_y > map_height - Y_SCREEN) camera_y = map_height - Y_SCREEN;
+										
+						al_draw_bitmap_region(
+											background, 
+											camera_x,   // X de onde começar a cortar o mapa
+											camera_y,   // Y de onde começar a cortar o mapa
+											X_SCREEN,   // Largura da tela (o quanto cortar)
+											Y_SCREEN,   // Altura da tela (o quanto cortar)
+											0,          // X de destino na tela (sempre 0, desenha no canto superior esquerdo da tela)
+											0,          // Y de destino na tela (sempre 0)
+											0           // Flags
+										);
+															
+						
+						
 						update_life(player_1, font, background);
-						update_position(player_1, enemy);																																						//Atualiza a posição dos jogadores
+						update_position(player_1);																																						//Atualiza a posição dos jogadores
 						
 						p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
 
@@ -249,8 +282,21 @@ int main(){
 						if(update_enemy(enemy, player_1, font))																																						//Atual
 							al_draw_rectangle(enemy->x-enemy->width/2, enemy->y-enemy->heigth/2, enemy->x+enemy->width/2, enemy->y+enemy->heigth/2, al_map_rgb(0, 255, 0), 3);														//Desenha o quadrado inimigo na tela
 						
-							al_draw_filled_rectangle(player_1->x-player_1->width/2, player_1->y-player_1->heigth/2, player_1->x+player_1->width/2, player_1->y+player_1->heigth/2, al_map_rgb(255, 0, 0));					//Insere o quadrado do primeiro jogador na tela
-							al_flip_display();																																											//Insere as modificações realizadas nos buffers de tela
+						
+						
+						float player_screen_x = player_1->x - camera_x;
+						float player_screen_y = player_1->y - camera_y;
+
+						al_draw_filled_rectangle(
+							player_screen_x - player_1->width/2, 
+							player_screen_y - player_1->heigth/2, 
+							player_screen_x + player_1->width/2, 
+							player_screen_y + player_1->heigth/2, 
+							al_map_rgb(255, 0, 0)
+						);
+						
+						
+						al_flip_display();																																											//Insere as modificações realizadas nos buffers de tela
 					}
 					else if ((event.type == 10) || (event.type == 12)){																																				//Verifica se o evento é de botão do teclado abaixado ou levantado
 						if (event.keyboard.keycode == 1) joystick_left(player_1->control);																															//Indica o evento correspondente no controle do primeiro jogador (botão de movimentação à esquerda)
@@ -270,6 +316,8 @@ int main(){
 			al_destroy_event_queue(queue);																																											//Destrutor da fila
 			square_destroy(player_1);																																												//Destrutor do quadrado do primeiro jogador
 			free(enemy);																																															//Destrutor do quadrado inimigo
+		
+			break;
 		}
 		case 2:
 		{
@@ -306,5 +354,4 @@ int main(){
 	return 0;
 	}
 	}
-	}		
-}
+}		
