@@ -205,7 +205,9 @@ int main(){
 			}
 			
 
-			wall* platform = wall_create(1700, 600, 850, 1280);																																				//Cria uma plataforma para o jogador pular em cima
+			wall* platform = wall_create(1856, 65, 928, 957);  //chao primeira parte																																				//Cria uma plataforma para o jogador pular em cima
+			wall* obstacle1 = wall_create(49, 47, 1529, 887); //obstaculo 1
+
 
 
 			int map_width = al_get_bitmap_width(background); // Pega a largura real do mapa
@@ -281,7 +283,7 @@ int main(){
 						p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
 
 						wall_draw(platform, 0, 0);																																												//Desenha a plataforma na tela
-
+						wall_draw(obstacle1, 0, 0);																																												//Desenha o obstáculo 1 na tela
 
 						if(update_enemy(enemy, player_1, font))																																						//Atual
 							al_draw_rectangle(enemy->x-enemy->width/2, enemy->y-enemy->heigth/2, enemy->x+enemy->width/2, enemy->y+enemy->heigth/2, al_map_rgb(0, 255, 0), 3);														//Desenha o quadrado inimigo na tela

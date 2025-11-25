@@ -32,7 +32,7 @@ void wall_draw(wall* element, float camera_x, float camera_y){
         wall_screen_y - element->height/2, 
         wall_screen_x + element->width/2, 
         wall_screen_y + element->height/2, 
-        al_map_rgb(0, 255, 255)
+        al_map_rgb(255, 255, 255)
     );
     printf("desenhando parede em x: %.2f y: %.2f\n", wall_screen_x, wall_screen_y);
 }
