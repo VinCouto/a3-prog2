@@ -19,11 +19,27 @@ void joystick_destroy(joystick *element){ free(element);}							//Implementaçã
 
 void joystick_left(joystick *element){ element->left = element->left ^ 1;}			//Implementação da função "joystick_left"; muda o estado do botão
 
+void joystick_left_press(joystick *element){ element->left = 1; }
+
+void joystick_left_release(joystick *element){ element->left = 0; }
+
 void joystick_right(joystick *element){ element->right = element->right ^ 1;}		//Implementação da função "joystick_right"; muda o estado do botão
+
+void joystick_right_press(joystick *element){ element->right = 1; }
+
+void joystick_right_release(joystick *element){ element->right = 0; }
 
 void joystick_up(joystick *element){ element->up = element->up ^ 1;}				//Implementação da função "joystick_up"; muda o estado do botão
 
+void joystick_up_press(joystick *element){ element->up = 1; }
+
+void joystick_up_release(joystick *element){ element->up = 0; }
+
 void joystick_down(joystick *element){ element->down = element->down ^ 1;}			//Implementação da função "joystick_down"; muda o estado do botão
+
+void joystick_down_press(joystick *element){ element->down = 1; }
+
+void joystick_down_release(joystick *element){ element->down = 0; }
 
 void joystick_ctr(joystick *element){ 							// Implementando agachar
 	element->ctr = 1;

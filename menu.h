@@ -8,7 +8,6 @@
 #include <stdio.h> 
 #include <stdlib.h>
 
-#include "Square.h"
 
 
 int menu(ALLEGRO_DISPLAY* disp, unsigned int X_SCREEN, unsigned int Y_SCREEN);

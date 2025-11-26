@@ -8,18 +8,71 @@
 #include <stdlib.h>
 
 #include "mapa.h"																																												//Inclusão da biblioteca de quadrados
-#include "Square.h"		
 #include "ChaoParede.h"
 #include "menu.h"	
 
 #define X_SCREEN 920																																														//Definição do tamanho da tela em pixels no eixo x
 #define Y_SCREEN 640																																														//Definição do tamanho da tela em pixels no eixo y
 
+#define MAX_WALLS 20
 
 #define X_BACKGROUND 4800																																													//Definição do tamanho da tela em pixels no eixo x
 #define Y_BACKGROUND 1280																																													//Definição do tamanho da tela em
 
 
+wall* check_collision_map(square *p, wall **walls, int num_walls) {
+    for (int i = 0; i < num_walls; i++) {
+        if (walls[i] != NULL) {
+            if (check_collision_wall(p, walls[i])) {
+                return walls[i]; // Retorna a parede específica que causou colisão
+            }
+        }
+    }
+    return NULL; 
+}
+
+// Verifica colisão apenas no eixo X (paredes laterais)
+int check_collision_horizontal(square *p, wall **walls, int num_walls) {
+    for (int i = 0; i < num_walls; i++) {
+        if (walls[i] != NULL) {
+            float p_esq   = p->x - p->width/2.0f;
+            float p_dir   = p->x + p->width/2.0f;
+            float p_cima  = p->y - p->heigth/2.0f;
+            float p_baixo = p->y + p->heigth/2.0f;
+
+            float w_esq   = walls[i]->pos_x - walls[i]->width/2.0f;
+            float w_dir   = walls[i]->pos_x + walls[i]->width/2.0f;
+            float w_cima  = walls[i]->pos_y - walls[i]->height/2.0f;
+            float w_baixo = walls[i]->pos_y + walls[i]->height/2.0f;
+
+            // Colisão apenas horizontal: player bate nas laterais (esq ou dir) da parede
+            // Ignora colisão se player está apenas tocando o topo (chão)
+            if (p_dir > w_esq && p_esq < w_dir && p_baixo > w_cima && p_cima < w_baixo) {
+                // Checa se a colisão é lateral (esquerda ou direita)
+                // Overlap à esquerda: player saiu pela esquerda e bateu
+                float left_overlap = p_dir - w_esq;
+                // Overlap à direita: player saiu pela direita e bateu
+                float right_overlap = w_dir - p_esq;
+                // Overlap no topo: player descer e bateu no topo (chão)
+                float top_overlap = p_baixo - w_cima;
+                // Overlap no fundo: player subir e bateu no fundo (teto)
+                float bottom_overlap = w_baixo - p_cima;
+
+                // Se o menor overlap é lateral (não no topo), há colisão horizontal
+                float min_overlap = left_overlap;
+                if (right_overlap < min_overlap) min_overlap = right_overlap;
+                
+                // Se o top_overlap é o menor (player vindo de cima), ignora
+                // Só detecta colisão se vier dos lados
+                if ((left_overlap < right_overlap && left_overlap < top_overlap && left_overlap <= bottom_overlap) ||
+                    (right_overlap < left_overlap && right_overlap < top_overlap && right_overlap <= bottom_overlap)) {
+                    return 1; // Colisão lateral detectada
+                }
+            }
+        }
+    }
+    return 0;
+}
 
 void update_life(square* victim, ALLEGRO_FONT* font, ALLEGRO_BITMAP* background){
 	if(victim->hp == 5){
@@ -44,6 +97,29 @@ void update_life(square* victim, ALLEGRO_FONT* font, ALLEGRO_BITMAP* background)
 }
 
 
+int check_hitbox_collision(square *p1, Hitbox box1, square *p2, Hitbox box2) {
+    if (!box1.active || !box2.active) return 0;
+
+    // Calcular posição absoluta no mundo
+    int p1_left   = (p1->x + box1.offset_x) - box1.width / 2;
+    int p1_right  = (p1->x + box1.offset_x) + box1.width / 2;
+    int p1_top    = (p1->y + box1.offset_y) - box1.height / 2;
+    int p1_bottom = (p1->y + box1.offset_y) + box1.height / 2;
+
+    int p2_left   = (p2->x + box2.offset_x) - box2.width / 2;
+    int p2_right  = (p2->x + box2.offset_x) + box2.width / 2;
+    int p2_top    = (p2->y + box2.offset_y) - box2.height / 2;
+    int p2_bottom = (p2->y + box2.offset_y) + box2.height / 2;
+
+    // Lógica AABB Padrão
+    if (p1_right > p2_left && 
+        p1_left < p2_right && 
+        p1_bottom > p2_top && 
+        p1_top < p2_bottom) {
+        return 1;
+    }
+    return 0;
+}
 
 
 unsigned char collision_2D(square *element_first, square *element_second){																																	//Implementação da função de verificação de colisão entre dois quadrados
@@ -64,38 +140,103 @@ unsigned char check_kill(square *victim){																																					//
 }
 
 
+void update_position(square *player, wall **walls, int num_walls) {
+    
+    // --- EIXO X (MOVIMENTAÇÃO E COLISÃO COM PAREDES) ---
 
-void update_position(square *player_1){																																					//Função de atualização das posições dos quadrados conforme os comandos do controle
+    // 1. Tenta Mover para ESQUERDA
+    if (player->control->left) {
+        // Move
+        square_move(player, 1, 0, X_BACKGROUND, Y_BACKGROUND);
+        
+        // Verifica se entrou numa parede lateral
+        if (check_collision_horizontal(player, walls, num_walls)) {
+            // Se bateu, desfaz o movimento (Move para direita)
+            square_move(player, 1, 1, X_BACKGROUND, Y_BACKGROUND);
+        }
+    }
 
-	if (player_1->control->left)																																											//Se o botão de movimentação para esquerda do controle do primeiro jogador está ativado...
-		square_move(player_1, 1, 0, X_BACKGROUND, Y_BACKGROUND);																																					//Move o quadrado do primeiro jogador para a esquerda	}
-	if (player_1->control->right)																																											//Se o botão de movimentação para direita do controle do primeir ojogador está ativado...
-		square_move(player_1, 1, 1, X_BACKGROUND, Y_BACKGROUND);																																					//Move o quadrado do primeiro jogador para a direta
-	
+    // 2. Tenta Mover para DIREITA
+    if (player->control->right) {
+        // Move
+        square_move(player, 1, 1, X_BACKGROUND, Y_BACKGROUND);
+        
+        // Verifica se entrou numa parede lateral
+        if (check_collision_horizontal(player, walls, num_walls)) {
+            // Se bateu, desfaz o movimento (Move para esquerda)
+            square_move(player, 1, 0, X_BACKGROUND, Y_BACKGROUND);
+        }
+    }
 
-	if (player_1->control->down){																																											//Se o botão de movimentação para baixo do controle do primeiro jogador está ativado...
-		printf("movendo para baixo\n");
-		square_move(player_1, 1, 3, X_BACKGROUND, Y_BACKGROUND);																																					//Move o quadrado do primeiro jogador para a baixo
-	}
+    // --- COMANDOS DE ESTADO (AGACHAR/PULAR) ---
 
-	if(player_1->control->ctr){
-		square_move(player_1, 1, 4, X_BACKGROUND, Y_BACKGROUND);
-	}
+    // 3. Agachar (CTR)
+    if (player->control->ctr) {
+        square_move(player, 1, 4, X_BACKGROUND, Y_BACKGROUND);
+    }
 
-	if (player_1->control->up && player_1->idle != 2) {
-		
-		// Se ele está agachado (1), precisamos restaurar a altura ANTES de pular
-		if (player_1->idle == 1) {
-			player_1->heigth = player_1->heigth * 2; // Devolve a altura original
-			player_1->y = player_1->y - player_1->heigth/4; // (Opcional) Ajuste visual suave para ele não "entrar" no chão ao crescer
-			player_1->idle = 0;                     // Estado: Em pé
-		}
+    // 4. Pular (CIMA) - Só pula se NÃO estiver no ar (idle != 2)
+    if (player->control->up && player->idle != 2) {
+        
+        // Se estava agachado, levanta antes de pular
+        if (player->idle == 1) {
+            player->heigth = player->heigth * 2; 
+            player->y = player->y - player->heigth/4; 
+            player->idle = 0;
+        }
 
-		player_1->vy = -18.0f; // Aplica a força do pulo
-		player_1->idle = 2;    // Define o estado como "No Ar"
-	}
-	square_apply_physics(player_1, 1280);
-	printf("idle: %u\n", player_1->idle);
+        // Aplica a força do pulo
+        player->vy = FORCA_PULO; 
+        player->idle = 2; // Estado: No Ar
+    }
+}
+
+
+
+void update_physics(square *player, wall **walls, int num_walls) {
+    
+    // 1. Aplica Gravidade
+    player->vy += GRAVIDADE;
+    
+    // Limite de velocidade de queda (Terminal Velocity) para não atravessar o chão
+    if (player->vy > 20.0f) player->vy = 20.0f;
+
+	// 2. Move Y (usar float para não truncar incremendtos fracionários)
+	player->y += player->vy;
+
+    // 3. Verifica colisão Vertical (Chão ou Teto)
+    wall* hit_wall = check_collision_map(player, walls, num_walls);
+    
+    if (hit_wall != NULL) {
+        
+        // CASO A: Caindo (Bateu no Chão)
+        if (player->vy > 0) {
+            // Corrige posição: Fica exatamente em cima da parede
+            player->y = (hit_wall->pos_y - hit_wall->height/2) - player->heigth/2;
+            
+            player->vy = 0;   // Para de cair
+            
+            // Se estava caindo (estado 2), aterra para estado 0 (em pé)
+            if (player->idle == 2) {
+                player->idle = 0; 
+            }
+        }
+        
+        // CASO B: Subindo (Bateu a Cabeça)
+        else if (player->vy < 0) {
+            // Corrige posição: Fica exatamente abaixo da parede
+            player->y = (hit_wall->pos_y + hit_wall->height/2) + player->heigth/2;
+            
+            player->vy = 0; // Zera velocidade (começa a cair)
+        }
+    }
+    // CASO C: Se não bateu em nada, verifica se está de pé ou no ar
+    else {
+        // Se estava de pé (idle != 2) e agora saiu do chão, vai para o ar
+        if (player->idle == 0 || player->idle == 1) {
+            player->idle = 2; // Estado: No ar
+        }
+    }
 }
 
 
@@ -205,10 +346,23 @@ int main(){
 			}
 			
 
-			wall* platform = wall_create(1856, 65, 928, 957);  //chao primeira parte																																				//Cria uma plataforma para o jogador pular em cima
-			wall* obstacle1 = wall_create(49, 47, 1529, 887); //obstaculo 1
+			//wall* platform = wall_create(1856, 65, 928, 957);  //chao primeira parte																																				//Cria uma plataforma para o jogador pular em cima
+			//wall* obstacle1 = wall_create(49, 47, 1529, 887); //obstaculo 1
+
+			wall* map_walls[MAX_WALLS];
+			
+			// Inicializa tudo como NULL para segurança
+			for(int i=0; i<MAX_WALLS; i++) map_walls[i] = NULL;
 
 
+			int wall_count = 0;
+
+			// Cria as paredes e adiciona no array
+			map_walls[0] = wall_create(1856, 65, 928, 957);  // Chão
+			wall_count++;
+
+			map_walls[1] = wall_create(49, 47, 1529, 887);   // Obstáculo 1
+			wall_count++;
 
 			int map_width = al_get_bitmap_width(background); // Pega a largura real do mapa
 			int map_height = al_get_bitmap_height(background); // Pega a altura real do mapa
@@ -220,15 +374,10 @@ int main(){
 			//al_flush_event_queue(queue);
 
 
-			while(1){																																																//Laço servidor do jogo
-				al_wait_for_event(queue, &event);																																									//Função que captura eventos da fila, inserindo os mesmos na variável de eventos
+		while(1){																																																//Laço servidor do jogo
+			al_wait_for_event(queue, &event);																																									//Função que captura eventos da fila, inserindo os mesmos na variável de eventos
 
-				player_1->vy += 0.7f;
-				player_1->y += player_1->vy;
-
-				if (check_collision_wall(player_1, platform)) {
-					
-					if (player_1->vy > 0) {
+			/*if (check_collision_wall(player_1, platform)) {					if (player_1->vy > 0) {
 						player_1->y = (platform->pos_y - platform->height/2) - player_1->heigth/2;
 						
 						player_1->vy = 0;    // Para de cair
@@ -240,6 +389,7 @@ int main(){
 					}
 
 				}
+				*/
 				if (p1k){																																													//Verifica se algum jogador foi morto 																																						//Limpe a tela atual para um fundo preto
 					al_draw_bitmap(background, 0, 0, 0);	
 					if (p1k) al_draw_text(font, al_map_rgb(255, 255, 255), X_SCREEN/2 - 40, Y_SCREEN/2-15, 0, "EMPATE!");																					//Se ambos foram mortos, declare um empate
@@ -253,8 +403,8 @@ int main(){
 				else{																																																//Se nenhum quadrado morreu
 					if (event.type == 30){																																											//O evento tipo 30 indica um evento de relógio, ou seja, verificação se a tela deve ser atualizada (conceito de FPS)	
 						
-						camera_x = player_1->x - X_SCREEN / 2;
-						camera_y = player_1->y - Y_SCREEN / 2;
+						camera_x = (player_1->x - X_SCREEN / 2);
+						camera_y = (player_1->y - Y_SCREEN / 2) - 150 ;
 
 						// Limite Esquerdo e Superior
 						if (camera_x < 0) camera_x = 0;
@@ -277,13 +427,47 @@ int main(){
 															
 						
 						
+						if (check_hitbox_collision(player_1, player_1->body_box, enemy, enemy->body_box)) {
+						// Player encostou no corpo do inimigo -> Toma Dano
+						}
+
+
+						// Lógica de Ataque
+						if (player_1->control->ctr) { // Botão de ataque
+							player_1->attack_box.active = 1;
+						} else {
+							player_1->attack_box.active = 0;
+						}
+
+						// Checagem de Dano no Inimigo
+						if (check_hitbox_collision(player_1, player_1->attack_box, enemy, enemy->body_box)) {
+							enemy->hp--; // O soco (attack_box) acertou o corpo (body_box) do inimigo
+						}
+
+
+						int debug_mode = 0;
+						if(event.type == 10 && event.keyboard.keycode == ALLEGRO_KEY_H){
+							debug_mode = !debug_mode;
+						}
+
+						if (debug_mode) {
+						// Desenha Hitbox do Corpo em VERDE
+						al_draw_rectangle(
+							(player_1->x + player_1->body_box.offset_x) - player_1->body_box.width/2,
+							(player_1->y + player_1->body_box.offset_y) - player_1->body_box.height/2,
+							(player_1->x + player_1->body_box.offset_x) + player_1->body_box.width/2,
+							(player_1->y + player_1->body_box.offset_y) + player_1->body_box.height/2,
+							al_map_rgb(0, 255, 0), 1
+						);
+						}
+
 						update_life(player_1, font, background);
-						update_position(player_1);																																						//Atualiza a posição dos jogadores
+						update_position(player_1, map_walls, MAX_WALLS);            			
+			            update_physics(player_1, map_walls, MAX_WALLS);
 						
+
 						p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
 
-						wall_draw(platform, 0, 0);																																												//Desenha a plataforma na tela
-						wall_draw(obstacle1, 0, 0);																																												//Desenha o obstáculo 1 na tela
 
 						if(update_enemy(enemy, player_1, font))																																						//Atual
 							al_draw_rectangle(enemy->x-enemy->width/2, enemy->y-enemy->heigth/2, enemy->x+enemy->width/2, enemy->y+enemy->heigth/2, al_map_rgb(0, 255, 0), 3);														//Desenha o quadrado inimigo na tela

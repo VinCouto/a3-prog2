@@ -8,9 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Square.h"
-#include "ChaoParede.h"
-#include "menu.h"																																													//Inclusão da biblioteca de quadrados
 
 
 ALLEGRO_BITMAP* map_create();
