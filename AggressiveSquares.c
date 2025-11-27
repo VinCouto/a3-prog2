@@ -10,6 +10,7 @@
 #include "mapa.h"																																												//Inclusão da biblioteca de quadrados
 #include "ChaoParede.h"
 #include "menu.h"	
+#include "obstacle.h"
 
 #define X_SCREEN 920																																														//Definição do tamanho da tela em pixels no eixo x
 #define Y_SCREEN 640																																														//Definição do tamanho da tela em pixels no eixo y
@@ -332,7 +333,15 @@ int main(){
 			enemy->face = 0;																																														//Define a face do inimigo (não usada)
 
 
-	
+			// Criar obstáculos
+      obstacle* obs1 = obstacle_create(500, 800, 80, 80, "obstaculo1.png", 1, 15.0f);
+      obstacle* obs2 = obstacle_create(1200, 600, 100, 100, "obstaculo2.png", 2, 20.0f);
+
+			if (!obs1 || !obs2) {
+        fprintf(stderr, "Failed to create obstacles!\n");
+        return -1;
+      }
+
 
 			ALLEGRO_EVENT event;																																													//Variável que guarda um evento capturado, sua estrutura é definida em: https:		//www.allegro.cc/manual/5/ALLEGRO_EVENT
 			al_start_timer(timer);																																													//Função que inicializa o relógio do programa
@@ -425,7 +434,52 @@ int main(){
 											0           // Flags
 										);
 															
+											// COLISÃO COM OBSTÁCULOS
+						if (check_collision_obstacle(player_1, obs1)) {
+								if (!obs1->check_touch) {
+										player_1->hp -= obs1->damage;
+										apply_knockback(player_1, obs1);
+										obs1->check_touch = 1;
+										printf("Player tomou %d de dano do obstáculo 1! HP: %d\n", obs1->damage, player_1->hp);
+								}
+						} else {
+								obs1->check_touch = 0; // Reset quando não está tocando
+						}
+
+						if (check_collision_obstacle(player_1, obs2)) {
+								if (!obs2->check_touch) {
+										player_1->hp -= obs2->damage;
+										apply_knockback(player_1, obs2);
+										obs2->check_touch = 1;
+										printf("Player tomou %d de dano do obstáculo 2! HP: %d\n", obs2->damage, player_1->hp);
+								}
+						} else {
+								obs2->check_touch = 0;
+						}
+
+						// Desenhar obstáculos
+						float obs1_screen_x = obs1->pos_x - camera_x;
+						float obs1_screen_y = obs1->pos_y - camera_y;
 						
+						if (obs1->sprite) {
+								al_draw_scaled_bitmap(obs1->sprite, 0, 0, al_get_bitmap_width(obs1->sprite), al_get_bitmap_height(obs1->sprite),
+																		obs1_screen_x - obs1->width/2, obs1_screen_y - obs1->height/2, obs1->width, obs1->height, 0);
+						} else {
+								al_draw_rectangle(obs1_screen_x - obs1->width/2, obs1_screen_y - obs1->height/2,
+																obs1_screen_x + obs1->width/2, obs1_screen_y + obs1->height/2, al_map_rgb(255, 0, 0), 3);
+						}
+
+						float obs2_screen_x = obs2->pos_x - camera_x;
+						float obs2_screen_y = obs2->pos_y - camera_y;
+						
+						if (obs2->sprite) {
+								al_draw_scaled_bitmap(obs2->sprite, 0, 0, al_get_bitmap_width(obs2->sprite), al_get_bitmap_height(obs2->sprite),
+																		obs2_screen_x - obs2->width/2, obs2_screen_y - obs2->height/2, obs2->width, obs2->height, 0);
+						} else {
+								al_draw_rectangle(obs2_screen_x - obs2->width/2, obs2_screen_y - obs2->height/2,
+																obs2_screen_x + obs2->width/2, obs2_screen_y + obs2->height/2, al_map_rgb(255, 0, 0), 3);
+						}
+
 						
 						if (check_hitbox_collision(player_1, player_1->body_box, enemy, enemy->body_box)) {
 						// Player encostou no corpo do inimigo -> Toma Dano
