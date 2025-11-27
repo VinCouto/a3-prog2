@@ -3,12 +3,14 @@
 
 
 #include "Square.h"
+#include <allegro5/allegro5.h>
 
 struct wall {
     unsigned short width;
     unsigned short height;
     unsigned short pos_x;
     unsigned short pos_y;
+    ALLEGRO_BITMAP *sprite;
 };
 
 wall* wall_create(unsigned short width, unsigned short height, unsigned short pos_x, unsigned short pos_y);

@@ -19,6 +19,7 @@ wall* wall_create(unsigned short width, unsigned short height, unsigned short po
     new_wall->height = height;
     new_wall->pos_x = pos_x;
     new_wall->pos_y = pos_y;
+    new_wall->sprite = NULL; // Inicializa o sprite como NULL
     return new_wall;
 } 
 

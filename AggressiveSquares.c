@@ -276,7 +276,7 @@ int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){										
 
 		int steps = (rand()%6);
 		int trajetory = (rand()%2);
-		int move = rand()%6;
+		int move = rand()%11;
 		perror("decidindo movimento inimigo\n");
 		if(!move)
 			square_move(enemy,steps, trajetory, X_BACKGROUND, Y_BACKGROUND);
@@ -332,7 +332,7 @@ int main(){
 
 
 			// Criar obstáculos
-			obstacle* obs1 = obstacle_create(500, 800, 80, 80, "obstaculo1.png", 1, 15.0f);
+			obstacle* obs1 = obstacle_create(500, 900, 80, 80, "obstaculo1.png", 1, 15.0f);
 			obstacle* obs2 = obstacle_create(1200, 600, 100, 100, "obstaculo2.png", 2, 20.0f);
 
 					if (!obs1 || !obs2) {
@@ -366,8 +366,12 @@ int main(){
 			map_walls[0] = wall_create(1856, 65, 928, 957);  // Chão
 			wall_count++;
 
-			map_walls[1] = wall_create(49, 47, 1529, 887);   // Obstáculo 1
+			map_walls[1] = wall_create(50, 50, 1529, 887);   // Obstáculo 1
 			wall_count++;
+			if(map_walls[1]){
+				printf("criei wall 1\n");
+				map_walls[1]->sprite = al_load_bitmap("plataforma1.png");
+			}
 
 			int map_width = al_get_bitmap_width(background); // Pega a largura real do mapa
 			int map_height = al_get_bitmap_height(background); // Pega a altura real do mapa
@@ -381,7 +385,7 @@ int main(){
 			printf("criei walls\n");
 
 			typedef struct { float x, y, w, h; unsigned char triggered; } SpawnTrigger;
-			SpawnTrigger enemy_spawn = { 1000.0f, 940.0f, 50.0f, 20.0f, 0 }; // ajustar conforme posição da plataforma (x,y,w,h)
+			SpawnTrigger enemy_spawn = { 400.0f, 930.0f, 50.0f, 20.0f, 0 }; // ajustar conforme posição da plataforma (x,y,w,h)
 			square* enemy = NULL; // não criar ainda
 
 
@@ -490,7 +494,7 @@ int main(){
 								py + player_1->heigth/2.0f > enemy_spawn.y - enemy_spawn.h/2.0f &&
 								py - player_1->heigth/2.0f < enemy_spawn.y + enemy_spawn.h/2.0f) {
 							// spawn do inimigo
-								enemy = square_create(40, 40, 0, enemy_spawn.x, enemy_spawn.y - 50.0f, X_BACKGROUND, Y_BACKGROUND);
+								enemy = square_create(40, 40, 0, enemy_spawn.x+600, enemy_spawn.y - 30.0f, X_BACKGROUND, Y_BACKGROUND);
 								if (enemy) {
 									enemy->sprite = al_load_bitmap("enemy.png");
 									if (!enemy->sprite) {
