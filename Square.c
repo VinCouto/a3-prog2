@@ -29,12 +29,13 @@ square* square_create(int heigth, int width, unsigned char face, float x, float 
     new_square->attack_box.active = 0;    // Começa desligada (só liga quando apertar botão)
     
     
-    new_square->face = face;																															//Insere a indicação da face principal do quadrado
+	new_square->face = face;																															//Insere a indicação da face principal do quadrado
 	new_square->hp = 5;																																	//Insere o total de pontos de vida de um quadrado (!)
 	new_square->x = x;																																	//Insere a posição inicial central de X
 	new_square->y = y;																																	//Insere a posição inicial central de Y
 	new_square->idle = 0;
-	new_square->vy = 0;	
+	new_square->vy = 0;
+	new_square->sprite = NULL;  // Sprite inicialmente vazio
 	new_square->control = joystick_create();																											//Insere o elemento de controle do quadrado
 	return new_square;																																	//Retorna o novo quadrado
 }

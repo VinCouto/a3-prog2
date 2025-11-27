@@ -244,10 +244,16 @@ void update_physics(square *player, wall **walls, int num_walls) {
 
 int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){																																//Função que atualiza o inimigo no jogo
 		
+		perror("dentro do update inimigo");
 		al_draw_text(font, al_map_rgb(255,255,255), 400, 75, 0, "Enemy HP:");
+		perror("dentro do update inimigo depois do draw text");
 		char hp_str[4];
+		perror("dentro do update inimigo antes d criar o char do hp");
 		sprintf(hp_str, "%d", enemy->hp);
+		perror("dentro do update inimigo dps d criar o char do hp");
 		al_draw_text(font, al_map_rgb(255,255,255), 500, 75, 0, hp_str);
+
+		perror("atualizando inimigo\n");
 
 		if(collision_2D(enemy, player_1)){
 
@@ -261,15 +267,17 @@ int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){										
 			player_1->hp--;
 
 		}
-			
+		
+		perror("checando kill inimigo\n");
 
 		if(check_kill(enemy))
 			enemy->hp--;
-
+		perror("atualizei vida inimigo\n");
 
 		int steps = (rand()%6);
-		int trajetory = (rand()%4);
+		int trajetory = (rand()%2);
 		int move = rand()%6;
+		perror("decidindo movimento inimigo\n");
 		if(!move)
 			square_move(enemy,steps, trajetory, X_BACKGROUND, Y_BACKGROUND);
 
@@ -322,25 +330,15 @@ int main(){
 			square* player_1 = square_create(20, 20, 1, 10, Y_SCREEN/2, X_SCREEN, Y_SCREEN);																															//Cria o quadrado do primeiro jogador
 			if (!player_1) return 1;																																												//Verificação de erro na criação do quadrado do primeiro jogador
 
-			
-			square* enemy = (square*) malloc(sizeof(square));																																									//Cria um quadrado inimigo (sem função, apenas para teste de colisão)
-			if (!enemy) return 3;																																													//Verificação de erro na criação do quadrado inimigo
-			enemy->heigth = 50;																																														//Define o tamanho da lateral do
-			enemy->width = 50;
-			enemy->x = X_SCREEN/2;																																													//Define a posição X do inimigo
-			enemy->y = Y_SCREEN/2;																																													//Define a posição Y
-			enemy->hp = 15;																																															//Define a quantidade de vida do inimigo
-			enemy->face = 0;																																														//Define a face do inimigo (não usada)
-
 
 			// Criar obstáculos
-      obstacle* obs1 = obstacle_create(500, 800, 80, 80, "obstaculo1.png", 1, 15.0f);
-      obstacle* obs2 = obstacle_create(1200, 600, 100, 100, "obstaculo2.png", 2, 20.0f);
+			obstacle* obs1 = obstacle_create(500, 800, 80, 80, "obstaculo1.png", 1, 15.0f);
+			obstacle* obs2 = obstacle_create(1200, 600, 100, 100, "obstaculo2.png", 2, 20.0f);
 
-			if (!obs1 || !obs2) {
-        fprintf(stderr, "Failed to create obstacles!\n");
-        return -1;
-      }
+					if (!obs1 || !obs2) {
+				fprintf(stderr, "Failed to create obstacles!\n");
+				return -1;
+			}
 
 
 			ALLEGRO_EVENT event;																																													//Variável que guarda um evento capturado, sua estrutura é definida em: https:		//www.allegro.cc/manual/5/ALLEGRO_EVENT
@@ -362,8 +360,6 @@ int main(){
 			
 			// Inicializa tudo como NULL para segurança
 			for(int i=0; i<MAX_WALLS; i++) map_walls[i] = NULL;
-
-
 			int wall_count = 0;
 
 			// Cria as paredes e adiciona no array
@@ -382,23 +378,17 @@ int main(){
 			//al_start_timer(timer);																																													//Inicia o relógio do jogo
 			//al_flush_event_queue(queue);
 
+			printf("criei walls\n");
+
+			typedef struct { float x, y, w, h; unsigned char triggered; } SpawnTrigger;
+			SpawnTrigger enemy_spawn = { 1000.0f, 940.0f, 50.0f, 20.0f, 0 }; // ajustar conforme posição da plataforma (x,y,w,h)
+			square* enemy = NULL; // não criar ainda
+
 
 		while(1){																																																//Laço servidor do jogo
+			printf("dentro do loop\n");
+			
 			al_wait_for_event(queue, &event);																																									//Função que captura eventos da fila, inserindo os mesmos na variável de eventos
-
-			/*if (check_collision_wall(player_1, platform)) {					if (player_1->vy > 0) {
-						player_1->y = (platform->pos_y - platform->height/2) - player_1->heigth/2;
-						
-						player_1->vy = 0;    // Para de cair
-						player_1->idle = 0;  // Estado: Em pé (no chão)
-					}
-					else if (player_1->vy < 0) {
-						player_1->y = (platform->pos_y + platform->height/2) + player_1->heigth/2;
-						player_1->vy = 0; // Bateu a cabeça, velocidade zera e começa a cair
-					}
-
-				}
-				*/
 				if (p1k){																																													//Verifica se algum jogador foi morto 																																						//Limpe a tela atual para um fundo preto
 					al_draw_bitmap(background, 0, 0, 0);	
 					if (p1k) al_draw_text(font, al_map_rgb(255, 255, 255), X_SCREEN/2 - 40, Y_SCREEN/2-15, 0, "EMPATE!");																					//Se ambos foram mortos, declare um empate
@@ -412,6 +402,7 @@ int main(){
 				else{																																																//Se nenhum quadrado morreu
 					if (event.type == 30){																																											//O evento tipo 30 indica um evento de relógio, ou seja, verificação se a tela deve ser atualizada (conceito de FPS)	
 						
+						printf("dentro do evento padrao\n");
 						camera_x = (player_1->x - X_SCREEN / 2);
 						camera_y = (player_1->y - Y_SCREEN / 2) - 150 ;
 
@@ -434,7 +425,8 @@ int main(){
 											0           // Flags
 										);
 															
-											// COLISÃO COM OBSTÁCULOS
+						
+						// COLISÃO COM OBSTÁCULOS
 						if (check_collision_obstacle(player_1, obs1)) {
 								if (!obs1->check_touch) {
 										player_1->hp -= obs1->damage;
@@ -444,6 +436,7 @@ int main(){
 								}
 						} else {
 								obs1->check_touch = 0; // Reset quando não está tocando
+								printf("Player nao tocou no obstáculo 1\n");
 						}
 
 						if (check_collision_obstacle(player_1, obs2)) {
@@ -460,7 +453,7 @@ int main(){
 						// Desenhar obstáculos
 						float obs1_screen_x = obs1->pos_x - camera_x;
 						float obs1_screen_y = obs1->pos_y - camera_y;
-						
+
 						if (obs1->sprite) {
 								al_draw_scaled_bitmap(obs1->sprite, 0, 0, al_get_bitmap_width(obs1->sprite), al_get_bitmap_height(obs1->sprite),
 																		obs1_screen_x - obs1->width/2, obs1_screen_y - obs1->height/2, obs1->width, obs1->height, 0);
@@ -481,23 +474,37 @@ int main(){
 						}
 
 						
-						if (check_hitbox_collision(player_1, player_1->body_box, enemy, enemy->body_box)) {
+						printf("desenhei os obstaculos\n");
+
+						//if (check_hitbox_collision(player_1, player_1->body_box, enemy, enemy->body_box)) {
 						// Player encostou no corpo do inimigo -> Toma Dano
+						//}
+
+						
+						if (!enemy && !enemy_spawn.triggered) {
+							float px = player_1->x;
+							float py = player_1->y;
+							// AABB simples: verifica se jogador entrou na área de trigger
+							if (px + player_1->width/2.0f > enemy_spawn.x - enemy_spawn.w/2.0f &&
+								px - player_1->width/2.0f < enemy_spawn.x + enemy_spawn.w/2.0f &&
+								py + player_1->heigth/2.0f > enemy_spawn.y - enemy_spawn.h/2.0f &&
+								py - player_1->heigth/2.0f < enemy_spawn.y + enemy_spawn.h/2.0f) {
+							// spawn do inimigo
+								enemy = square_create(40, 40, 0, enemy_spawn.x, enemy_spawn.y - 50.0f, X_BACKGROUND, Y_BACKGROUND);
+								if (enemy) {
+									enemy->sprite = al_load_bitmap("enemy.png");
+									if (!enemy->sprite) {
+										fprintf(stderr, "Aviso: Não foi possível carregar enemy.png. Usando desenho padrão.\n");
+									}
+								}
+								enemy_spawn.triggered = 1; // evita spawn repetido
+							}
 						}
+						
+						printf("verifiquei spawn inimigo\n");
 
-
-						// Lógica de Ataque
-						if (player_1->control->ctr) { // Botão de ataque
-							player_1->attack_box.active = 1;
-						} else {
-							player_1->attack_box.active = 0;
-						}
-
-						// Checagem de Dano no Inimigo
-						if (check_hitbox_collision(player_1, player_1->attack_box, enemy, enemy->body_box)) {
-							enemy->hp--; // O soco (attack_box) acertou o corpo (body_box) do inimigo
-						}
-
+						
+						printf("verifiquei hitbox\n");
 
 						int debug_mode = 0;
 						if(event.type == 10 && event.keyboard.keycode == ALLEGRO_KEY_H){
@@ -515,21 +522,48 @@ int main(){
 						);
 						}
 
+						printf("debug mode\n");
+						
 						update_life(player_1, font, background);
+						printf("atualizei vida\n");
+						
 						update_position(player_1, map_walls, MAX_WALLS);            			
-			            update_physics(player_1, map_walls, MAX_WALLS);
-						
+			            printf("atualizei posicao\n");
 
-						p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
+						update_physics(player_1, map_walls, MAX_WALLS);
+						printf("atualizei fisica\n");
 
+					p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
+					printf("verifiquei kill\n");
 
-						if(update_enemy(enemy, player_1, font))																																						//Atual
-							al_draw_rectangle(enemy->x-enemy->width/2, enemy->y-enemy->heigth/2, enemy->x+enemy->width/2, enemy->y+enemy->heigth/2, al_map_rgb(0, 255, 0), 3);														//Desenha o quadrado inimigo na tela
+					if(enemy && update_enemy(enemy, player_1, font)){
+						printf("atualizei inimigo\n");
 						
+						// Calcula posição em tela do inimigo
+						float enemy_screen_x = enemy->x - camera_x;
+						float enemy_screen_y = enemy->y - camera_y;
 						
-						
-						float player_screen_x = player_1->x - camera_x;
-						float player_screen_y = player_1->y - camera_y;
+						// Desenha sprite PNG se existir, senão usa retângulo
+						if (enemy->sprite) {
+							al_draw_scaled_bitmap(enemy->sprite, 0, 0, 
+												al_get_bitmap_width(enemy->sprite), 
+												al_get_bitmap_height(enemy->sprite),
+												enemy_screen_x - enemy->width/2, 
+												enemy_screen_y - enemy->heigth/2, 
+												enemy->width, 
+												enemy->heigth, 0);
+						} else {
+							al_draw_rectangle(enemy_screen_x - enemy->width/2, enemy_screen_y - enemy->heigth/2, 
+											  enemy_screen_x + enemy->width/2, enemy_screen_y + enemy->heigth/2, 
+											  al_map_rgb(0, 255, 0), 3);
+						}
+						printf("desenhei inimigo\n");
+					}
+					
+					float player_screen_x = player_1->x - camera_x;
+					float player_screen_y = player_1->y - camera_y;
+
+					printf("calculei posicao tela\n");
 
 						al_draw_filled_rectangle(
 							player_screen_x - player_1->width/2, 
@@ -539,8 +573,10 @@ int main(){
 							al_map_rgb(255, 0, 0)
 						);
 						
+						printf("desenhei jogador\n");
 						
 						al_flip_display();																																											//Insere as modificações realizadas nos buffers de tela
+						printf("atualizei display\n");
 					}
 					else if ((event.type == 10) || (event.type == 12)){																																				//Verifica se o evento é de botão do teclado abaixado ou levantado
 						if (event.keyboard.keycode == 1) joystick_left(player_1->control);																															//Indica o evento correspondente no controle do primeiro jogador (botão de movimentação à esquerda)
@@ -554,12 +590,15 @@ int main(){
 			}
 			
 			al_destroy_bitmap(background);
-			al_destroy_font(font);																																													//Destrutor da fonte padrão
-			al_destroy_display(disp);																																												//Destrutor da tela
-			al_destroy_timer(timer);																																												//Destrutor do relógio
-			al_destroy_event_queue(queue);																																											//Destrutor da fila
-			square_destroy(player_1);																																												//Destrutor do quadrado do primeiro jogador
-			free(enemy);																																															//Destrutor do quadrado inimigo
+			al_destroy_font(font);
+			al_destroy_display(disp);
+			al_destroy_timer(timer);
+			al_destroy_event_queue(queue);
+			square_destroy(player_1);
+			if (enemy) {
+				if (enemy->sprite) al_destroy_bitmap(enemy->sprite);
+				free(enemy);
+			}
 		
 			break;
 		}

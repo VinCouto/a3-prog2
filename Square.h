@@ -2,6 +2,7 @@
 #define __SQUARE__
 
 #include "Joystick.h"
+#include <allegro5/allegro5.h>
 
 // Forward declaration of wall struct to avoid circular dependency
 typedef struct wall wall;
@@ -31,6 +32,7 @@ typedef struct {
     Hitbox body_box;
     Hitbox attack_box;
     joystick *control;
+    ALLEGRO_BITMAP *sprite;  // Sprite do personagem (pode ser NULL)
 } square;
 
 square* square_create(int heigth, int width, unsigned char face, float x, float y, float max_x, float max_y);
