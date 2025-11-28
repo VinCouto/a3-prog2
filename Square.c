@@ -37,7 +37,8 @@ square* square_create(int heigth, int width, unsigned char face, float x, float 
 	new_square->vy = 0;
 	new_square->sprite = NULL;  // Sprite inicialmente vazio
 	new_square->control = joystick_create();																											//Insere o elemento de controle do quadrado
-	return new_square;																																	//Retorna o novo quadrado
+	new_square->invincibility_timer = 0; // Inicializa o contador de invencibilidade
+    return new_square;																																	//Retorna o novo quadrado
 }
 
 void square_move(square *element, char steps, unsigned char trajectory, float max_x, float max_y){									//Implementação da função "square_move"

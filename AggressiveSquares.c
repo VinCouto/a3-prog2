@@ -258,15 +258,19 @@ int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){										
 		perror("atualizando inimigo\n");
 
 		if(collision_2D(enemy, player_1)){
-
-			if (player_1->x < enemy->x) {
-					player_1->x -= 20; // Empurra para esquerda
-					player_1->vy = -5; // Dá um pulinho
+			if (player_1->invincibility_timer == 0) {
+				// Empurrão
+				if (player_1->x < enemy->x) {
+					player_1->x -= 20; 
+					player_1->vy = -5; 
 				} else {
-					player_1->x += 20; // Empurra para direita
+					player_1->x += 20; 
 					player_1->vy = -5;
 				}
-			player_1->hp--;
+				
+				player_1->hp--;
+				player_1->invincibility_timer = 60; // Ativa cooldown
+    		}
 
 		}
 		
@@ -334,12 +338,11 @@ int main(){
 
 			
 			
-			
-			
 			ALLEGRO_EVENT event;																																													//Variável que guarda um evento capturado, sua estrutura é definida em: https:		//www.allegro.cc/manual/5/ALLEGRO_EVENT
 			al_start_timer(timer);																																													//Função que inicializa o relógio do programa
 			unsigned char p1k = 0;																																											//Variáveis de controle de vida dos quadrados (jogadores)
 			
+
 			ALLEGRO_BITMAP* background = NULL;	
 			background = map_create();	
 			if (!background) {
@@ -347,7 +350,6 @@ int main(){
 				return -1;
 			}
 			
-
 			
 			obstacle* map_obstacles[MAX_OBSTACLES]; 
 
@@ -362,6 +364,17 @@ int main(){
 			obstacle_count++;
 			get_sprite_obstacle(map_obstacles[1], "obstaculo1.png");
 
+			map_obstacles[2] = obstacle_create(1035, 150 ,100 , 128, "obstaculo1.png", 1, 5.0f);
+			obstacle_count++;
+			get_sprite_obstacle(map_obstacles[2], "bomba.png");
+		
+			map_obstacles[3] = obstacle_create(1415, 200 ,120 , 156, "bomba.png", 1, 15.0f);
+			obstacle_count++;
+			get_sprite_obstacle(map_obstacles[3], "bomba.png");
+
+			map_obstacles[4] = obstacle_create(2860, 225 ,120 , 156, "bomba.png", 1, 5.0f);
+			obstacle_count++;
+			get_sprite_obstacle(map_obstacles[4], "bomba.png");
 
 			wall* map_walls[MAX_WALLS];
 			
@@ -409,9 +422,37 @@ int main(){
 			wall_count++;
 			get_sprite_wall(map_walls[10], "plataforma1.png");
 
-			map_walls[11] = wall_create(50,50, 1125,342);
+			map_walls[11] = wall_create(50,50, 1125,362);
 			wall_count++;
 			get_sprite_wall(map_walls[11], "plataforma1.png");
+
+			map_walls[12] = wall_create(200,40, 1300,362);
+			wall_count++;
+			get_sprite_wall(map_walls[12], "plataforma3.png");
+
+			map_walls[13] = wall_create(50, 50, 1425,490);
+			wall_count++;
+			get_sprite_wall(map_walls[13], "plataforma1.png");
+
+			map_walls[14] = wall_create(50, 50, 1500,370);
+			wall_count++;
+			get_sprite_wall(map_walls[14], "plataforma1.png");
+
+			map_walls[15] = wall_create(130, 40, 1865, 310);
+			wall_count++;
+			get_sprite_wall(map_walls[15], "plataforma3.png");
+
+			map_walls[16] = wall_create(38, 94, 1916, 222);
+			wall_count++;
+			get_sprite_wall(map_walls[16], "plataforma2.png");
+
+			map_walls[17] = wall_create(50, 50, 2150,400);
+			wall_count++;
+			get_sprite_wall(map_walls[17], "plataforma1.png");
+
+			map_walls[18] = wall_create(100, 100, 2500, 425);
+			wall_count++;
+			get_sprite_wall(map_walls[18], "plataforma1.png");
 
 			for(int i = 2; i<= 5; i++){
 				if(map_walls[i]){
@@ -477,13 +518,21 @@ int main(){
 															
 						
 						// COLISÃO COM OBSTÁCULOS
-						for(int i = 0; i <= 1; i++){
-							if(check_obstacles_with_map(player_1, map_obstacles, obstacle_count)){
-								printf("colidiu com obstaculo %d\n", i);
-								apply_knockback(player_1, map_obstacles[i]);
-								player_1->hp--;
+						for(int i = 0; i < obstacle_count; i++){
+						// Verifica se colidiu especificamente com o obstáculo 'i'
+							if (map_obstacles[i] != NULL && check_collision_obstacle(player_1, map_obstacles[i])) {
+								
+								// Verifica invencibilidade (para não morrer instantaneamente)
+								if (player_1->invincibility_timer == 0) {
+									printf("Colidiu com obstáculo %d\n", i);
+									
+									apply_knockback(player_1, map_obstacles[i]);
+									player_1->hp--;
+									
+									// Ativa invencibilidade por ~2 segundos (60 frames)
+									player_1->invincibility_timer = 60; 
+								}
 							}
-							
 						}
 
 						for(int i = 0; i < obstacle_count; i++){
@@ -553,6 +602,10 @@ int main(){
 
 						update_physics(player_1, map_walls, MAX_WALLS);
 						printf("atualizei fisica\n");
+
+					if (player_1->invincibility_timer > 0) {
+						player_1->invincibility_timer--;
+					}
 
 					p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
 					printf("verifiquei kill\n");

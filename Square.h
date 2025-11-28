@@ -33,6 +33,7 @@ typedef struct {
     Hitbox attack_box;
     joystick *control;
     ALLEGRO_BITMAP *sprite;  // Sprite do personagem (pode ser NULL)
+    int invincibility_timer; // Contador de frames invencível
 } square;
 
 square* square_create(int heigth, int width, unsigned char face, float x, float y, float max_x, float max_y);
