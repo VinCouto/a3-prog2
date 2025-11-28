@@ -15,7 +15,8 @@
 #define X_SCREEN 920																																														//Definição do tamanho da tela em pixels no eixo x
 #define Y_SCREEN 640																																														//Definição do tamanho da tela em pixels no eixo y
 
-#define MAX_WALLS 20
+#define MAX_WALLS 30
+#define MAX_OBSTACLES 20
 
 #define X_BACKGROUND 4800																																													//Definição do tamanho da tela em pixels no eixo x
 #define Y_BACKGROUND 1280																																													//Definição do tamanho da tela em
@@ -331,17 +332,10 @@ int main(){
 			square* player_1 = square_create(20, 20, 1, 10, Y_SCREEN/2, X_SCREEN, Y_SCREEN);																															//Cria o quadrado do primeiro jogador
 			if (!player_1) return 1;																																												//Verificação de erro na criação do quadrado do primeiro jogador
 
-
-			// Criar obstáculos
-			obstacle* obs1 = obstacle_create(200, 900, 50, 50, "obstaculo1.png", 1, 15.0f);
-			obstacle* obs2 = obstacle_create(700, 900, 50, 50, "obstaculo1.png", 1, 15.0f);
-
-					if (!obs1 || !obs2) {
-				fprintf(stderr, "Failed to create obstacles!\n");
-				return -1;
-			}
-
-
+			
+			
+			
+			
 			ALLEGRO_EVENT event;																																													//Variável que guarda um evento capturado, sua estrutura é definida em: https:		//www.allegro.cc/manual/5/ALLEGRO_EVENT
 			al_start_timer(timer);																																													//Função que inicializa o relógio do programa
 			unsigned char p1k = 0;																																											//Variáveis de controle de vida dos quadrados (jogadores)
@@ -354,8 +348,20 @@ int main(){
 			}
 			
 
-			//wall* platform = wall_create(1856, 65, 928, 957);  //chao primeira parte																																				//Cria uma plataforma para o jogador pular em cima
-			//wall* obstacle1 = wall_create(49, 47, 1529, 887); //obstaculo 1
+			
+			obstacle* map_obstacles[MAX_OBSTACLES]; 
+
+			for(int i=0; i<MAX_OBSTACLES; i++) map_obstacles[i] = NULL;
+			int obstacle_count = 0;
+
+			map_obstacles[0] = obstacle_create(200, 900, 50, 50, "obstaculo1.png", 1, 15.0f);
+			obstacle_count++;
+			get_sprite_obstacle(map_obstacles[0], "obstaculo1.png");
+
+			map_obstacles[1] = obstacle_create(700, 900, 50, 50, "obstaculo1.png", 1, 15.0f);
+			obstacle_count++;
+			get_sprite_obstacle(map_obstacles[1], "obstaculo1.png");
+
 
 			wall* map_walls[MAX_WALLS];
 			
@@ -382,9 +388,31 @@ int main(){
 
 			map_walls[5] = wall_create(50, 50, 500, 540);  // Plataforma 5
 			wall_count++;
-			
 
+			map_walls[6] = wall_create(90, 25, 685, 562);
+			wall_count++;
+			get_sprite_wall(map_walls[6], "plataforma3.png");
+			
+			map_walls[7] = wall_create(50,350, 850,750);
+			wall_count++;
+			get_sprite_wall(map_walls[7], "plataforma2.png");
+			
+			map_walls[8] = wall_create(50,100, 850,450);
+			wall_count++;
+			get_sprite_wall(map_walls[8], "plataforma2.png");
+
+			map_walls[9] = wall_create(50,50, 775,475);
+			wall_count++;
+			get_sprite_wall(map_walls[9], "plataforma1.png");
 		
+			map_walls[10] = wall_create(75,75, 912,342);
+			wall_count++;
+			get_sprite_wall(map_walls[10], "plataforma1.png");
+
+			map_walls[11] = wall_create(50,50, 1125,342);
+			wall_count++;
+			get_sprite_wall(map_walls[11], "plataforma1.png");
+
 			for(int i = 2; i<= 5; i++){
 				if(map_walls[i]){
 					get_sprite_wall(map_walls[i], "plataforma1.png");
@@ -449,56 +477,23 @@ int main(){
 															
 						
 						// COLISÃO COM OBSTÁCULOS
-						if (check_collision_obstacle(player_1, obs1)) {
-								if (!obs1->check_touch) {
-										player_1->hp -= obs1->damage;
-										apply_knockback(player_1, obs1);
-										obs1->check_touch = 1;
-										printf("Player tomou %d de dano do obstáculo 1! HP: %d\n", obs1->damage, player_1->hp);
-								}
-						} else {
-								obs1->check_touch = 0; // Reset quando não está tocando
-								printf("Player nao tocou no obstáculo 1\n");
+						for(int i = 0; i <= 1; i++){
+							if(check_obstacles_with_map(player_1, map_obstacles, obstacle_count)){
+								printf("colidiu com obstaculo %d\n", i);
+								apply_knockback(player_1, map_obstacles[i]);
+								player_1->hp--;
+							}
+							
 						}
 
-						if (check_collision_obstacle(player_1, obs2)) {
-								if (!obs2->check_touch) {
-										player_1->hp -= obs2->damage;
-										apply_knockback(player_1, obs2);
-										obs2->check_touch = 1;
-										printf("Player tomou %d de dano do obstáculo 2! HP: %d\n", obs2->damage, player_1->hp);
-								}
-						} else {
-								obs2->check_touch = 0;
-						}
-
-						// Desenhar obstáculos
-						float obs1_screen_x = obs1->pos_x - camera_x;
-						float obs1_screen_y = obs1->pos_y - camera_y;
-
-						if (obs1->sprite) {
-								al_draw_scaled_bitmap(obs1->sprite, 0, 0, al_get_bitmap_width(obs1->sprite), al_get_bitmap_height(obs1->sprite),
-																		obs1_screen_x - obs1->width/2, obs1_screen_y - obs1->height/2, obs1->width, obs1->height, 0);
-						} else {
-								al_draw_rectangle(obs1_screen_x - obs1->width/2, obs1_screen_y - obs1->height/2,
-																obs1_screen_x + obs1->width/2, obs1_screen_y + obs1->height/2, al_map_rgb(255, 0, 0), 3);
-						}
-
-						float obs2_screen_x = obs2->pos_x - camera_x;
-						float obs2_screen_y = obs2->pos_y - camera_y;
-						
-						if (obs2->sprite) {
-								al_draw_scaled_bitmap(obs2->sprite, 0, 0, al_get_bitmap_width(obs2->sprite), al_get_bitmap_height(obs2->sprite),
-																		obs2_screen_x - obs2->width/2, obs2_screen_y - obs2->height/2, obs2->width, obs2->height, 0);
-						} else {
-								al_draw_rectangle(obs2_screen_x - obs2->width/2, obs2_screen_y - obs2->height/2,
-																obs2_screen_x + obs2->width/2, obs2_screen_y + obs2->height/2, al_map_rgb(255, 0, 0), 3);
+						for(int i = 0; i < obstacle_count; i++){
+							draw_obstacle(map_obstacles[i], camera_x, camera_y);
 						}
 
 						printf("desenhei os obstaculos\n");
 
-
-						for(int i = 1; i <= 5; i++){
+ 
+						for(int i = 1; i < wall_count; i++){
 							wall_draw(map_walls[i], camera_x, camera_y);
 						}
 

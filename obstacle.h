@@ -20,6 +20,9 @@ typedef struct{
 obstacle* obstacle_create(float pos_x, float pos_y, unsigned short width, unsigned short height, const char* sprite_path, int damage, float knockback_force);
 void obstacle_destroy(obstacle* element);
 int check_collision_obstacle(square* player, obstacle* obs);
+int check_obstacles_with_map(square *p, obstacle **obstacles, int num_obstacles);
+void draw_obstacle(obstacle* obs, float camera_x, float camera_y);
+void get_sprite_obstacle(obstacle* element, const char* sprite_path);
 void apply_knockback(square* player, obstacle* obs);
 
 

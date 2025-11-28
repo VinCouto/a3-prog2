@@ -78,6 +78,51 @@ void apply_knockback(square* player, obstacle* obs) {
 }
 
 
+int check_obstacles_with_map(square *p, obstacle **obstacles, int num_obstacles) {
+    
+    // Percorre todas os obstaculos existentes
+    for (int i = 0; i < num_obstacles; i++) {
+        if (obstacles[i] != NULL) {
+            // Chama a função individual criada no passo 2
+            if (check_collision_obstacle(p, obstacles[i])) {
+                return 1; // Bateu em alguém! Para de procurar e avisa.
+            }
+        }
+    }
+    
+    return 0; // Passou por todas e não bateu em nada.
+}
+
+
+void draw_obstacle(obstacle* obs, float camera_x, float camera_y) {
+    float screen_x = obs->pos_x - camera_x;
+    float screen_y = obs->pos_y - camera_y;
+
+    if (obs->sprite) {
+        al_draw_scaled_bitmap(obs->sprite, 0, 0, 
+                              al_get_bitmap_width(obs->sprite), 
+                              al_get_bitmap_height(obs->sprite),
+                              screen_x - obs->width/2, 
+                              screen_y - obs->height/2, 
+                              obs->width, 
+                              obs->height, 0);
+    } else {
+        al_draw_rectangle(screen_x - obs->width/2, screen_y - obs->height/2,
+                          screen_x + obs->width/2, screen_y + obs->height/2, 
+                          al_map_rgb(255, 0, 0), 3);
+    }
+}
+
+
+
+
+void get_sprite_obstacle(obstacle* element, const char* sprite_path){
+    element->sprite = al_load_bitmap(sprite_path);
+    if (!element->sprite) {
+        fprintf(stderr, "Failed to load obstacle sprite from %s\n", sprite_path);
+    }
+}
+
 
 void obstacle_destroy(obstacle* element){
   if(element->sprite){
