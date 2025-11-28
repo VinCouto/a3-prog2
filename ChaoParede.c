@@ -23,18 +23,33 @@ wall* wall_create(unsigned short width, unsigned short height, unsigned short po
     return new_wall;
 } 
 
-void wall_draw(wall* element, float camera_x, float camera_y){
-    float wall_screen_x = element->pos_x - camera_x;
-    float wall_screen_y = element->pos_y - camera_y;
 
-    al_draw_filled_rectangle(
-        wall_screen_x - element->width/2, 
-        wall_screen_y - element->height/2, 
-        wall_screen_x + element->width/2, 
-        wall_screen_y + element->height/2, 
-        al_map_rgb(255, 255, 255)
-    );
-    printf("desenhando parede em x: %.2f y: %.2f\n", wall_screen_x, wall_screen_y);
+void get_sprite_wall(wall* element, const char* sprite_path){
+    element->sprite = al_load_bitmap(sprite_path);
+    if (!element->sprite) {
+        fprintf(stderr, "Failed to load wall sprite from %s\n", sprite_path);
+    }
+}
+
+void wall_draw(wall* element, float camera_x, float camera_y){
+    // Desenha parede com sprite se existir
+    float wall1_screen_x = element->pos_x - camera_x;
+    float wall1_screen_y = element->pos_y - camera_y;
+
+    if (element->sprite) {
+        al_draw_scaled_bitmap(element->sprite, 0, 0, 
+                                al_get_bitmap_width(element->sprite), 
+                                al_get_bitmap_height(element->sprite),
+                                wall1_screen_x - element->width/2, 
+                                wall1_screen_y - element->height/2, 
+                                element->width, 
+                                element->height, 0);
+    } else {
+        al_draw_rectangle(wall1_screen_x - element->width/2, wall1_screen_y - element->height/2, 
+                            wall1_screen_x + element->width/2, wall1_screen_y + element->height/2, 
+                            al_map_rgb(255, 255, 0), 3);
+    }
+    printf("desenhando parede em x: %.2d y: %.2d\n", element->pos_x, element->pos_y);
 }
 
 // Função para verificar colisão entre PLAYER (Square) e PAREDE (Wall)

@@ -32,6 +32,7 @@ wall* check_collision_map(square *p, wall **walls, int num_walls) {
     return NULL; 
 }
 
+
 // Verifica colisão apenas no eixo X (paredes laterais)
 int check_collision_horizontal(square *p, wall **walls, int num_walls) {
     for (int i = 0; i < num_walls; i++) {
@@ -368,9 +369,24 @@ int main(){
 
 			map_walls[1] = wall_create(50, 50, 1529, 887);   // Obstáculo 1
 			wall_count++;
-			if(map_walls[1]){
-				printf("criei wall 1\n");
-				map_walls[1]->sprite = al_load_bitmap("plataforma1.png");
+
+			map_walls[2] = wall_create(50, 50, 1750, 800);  // Plataforma 2
+			wall_count++;
+
+			map_walls[3] = wall_create(50, 50, 2200, 700);  // Plataforma 3
+			wall_count++;
+
+			map_walls[4] = wall_create(50, 50, 2400, 500);  // Plataforma 4
+			wall_count++;
+
+			map_walls[5] = wall_create(50, 50, 2600, 500);  // Plataforma 5
+			wall_count++;
+
+
+			for(int i = 1; i<= 5; i++){
+				if(map_walls[i]){
+					get_sprite_wall(map_walls[i], "plataforma1.png");
+				}
 			}
 
 			int map_width = al_get_bitmap_width(background); // Pega a largura real do mapa
@@ -477,8 +493,12 @@ int main(){
 																obs2_screen_x + obs2->width/2, obs2_screen_y + obs2->height/2, al_map_rgb(255, 0, 0), 3);
 						}
 
-						
 						printf("desenhei os obstaculos\n");
+
+
+						for(int i = 1; i <= 5; i++){
+							wall_draw(map_walls[i], camera_x, camera_y);
+						}
 
 						//if (check_hitbox_collision(player_1, player_1->body_box, enemy, enemy->body_box)) {
 						// Player encostou no corpo do inimigo -> Toma Dano
