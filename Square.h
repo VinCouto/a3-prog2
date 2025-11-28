@@ -8,7 +8,7 @@
 typedef struct wall wall;
 
 #define SQUARE_STEP 10
-#define GRAVIDADE 0.7f
+#define GRAVIDADE 0.8f
 #define FORCA_PULO -15.0f
 #define CHAO_Y 500
 

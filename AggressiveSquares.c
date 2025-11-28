@@ -333,8 +333,8 @@ int main(){
 
 
 			// Criar obstáculos
-			obstacle* obs1 = obstacle_create(500, 900, 80, 80, "obstaculo1.png", 1, 15.0f);
-			obstacle* obs2 = obstacle_create(1200, 600, 100, 100, "obstaculo2.png", 2, 20.0f);
+			obstacle* obs1 = obstacle_create(200, 900, 50, 50, "obstaculo1.png", 1, 15.0f);
+			obstacle* obs2 = obstacle_create(700, 900, 50, 50, "obstaculo1.png", 1, 15.0f);
 
 					if (!obs1 || !obs2) {
 				fprintf(stderr, "Failed to create obstacles!\n");
@@ -367,23 +367,25 @@ int main(){
 			map_walls[0] = wall_create(1856, 65, 928, 957);  // Chão
 			wall_count++;
 
-			map_walls[1] = wall_create(50, 50, 1529, 887);   // Obstáculo 1
+			map_walls[1] = wall_create(200, 40, 650, 840);   // Obstáculo 1
+			wall_count++;
+			get_sprite_wall(map_walls[1], "plataforma3.png");
+
+			map_walls[2] = wall_create(50, 50, 475, 725);  // Plataforma 2
 			wall_count++;
 
-			map_walls[2] = wall_create(50, 50, 1750, 800);  // Plataforma 2
+			map_walls[3] = wall_create(50, 50, 375, 635);  // Plataforma 3
 			wall_count++;
 
-			map_walls[3] = wall_create(50, 50, 2200, 700);  // Plataforma 3
+			map_walls[4] = wall_create(50, 50, 575, 635);  // Plataforma 4
 			wall_count++;
 
-			map_walls[4] = wall_create(50, 50, 2400, 500);  // Plataforma 4
+			map_walls[5] = wall_create(50, 50, 500, 540);  // Plataforma 5
 			wall_count++;
+			
 
-			map_walls[5] = wall_create(50, 50, 2600, 500);  // Plataforma 5
-			wall_count++;
-
-
-			for(int i = 1; i<= 5; i++){
+		
+			for(int i = 2; i<= 5; i++){
 				if(map_walls[i]){
 					get_sprite_wall(map_walls[i], "plataforma1.png");
 				}
@@ -401,7 +403,7 @@ int main(){
 			printf("criei walls\n");
 
 			typedef struct { float x, y, w, h; unsigned char triggered; } SpawnTrigger;
-			SpawnTrigger enemy_spawn = { 400.0f, 930.0f, 50.0f, 20.0f, 0 }; // ajustar conforme posição da plataforma (x,y,w,h)
+			SpawnTrigger enemy_spawn = { 0.0f, 930.0f, 50.0f, 100.0f, 0 }; // ajustar conforme posição da plataforma (x,y,w,h)
 			square* enemy = NULL; // não criar ainda
 
 
@@ -514,7 +516,7 @@ int main(){
 								py + player_1->heigth/2.0f > enemy_spawn.y - enemy_spawn.h/2.0f &&
 								py - player_1->heigth/2.0f < enemy_spawn.y + enemy_spawn.h/2.0f) {
 							// spawn do inimigo
-								enemy = square_create(40, 40, 0, enemy_spawn.x+600, enemy_spawn.y - 30.0f, X_BACKGROUND, Y_BACKGROUND);
+								enemy = square_create(40, 40, 0, enemy_spawn.x+500, enemy_spawn.y - 30.0f, X_BACKGROUND, Y_BACKGROUND);
 								if (enemy) {
 									enemy->sprite = al_load_bitmap("enemy.png");
 									if (!enemy->sprite) {
