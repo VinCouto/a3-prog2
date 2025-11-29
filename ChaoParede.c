@@ -19,7 +19,10 @@ wall* wall_create(unsigned short width, unsigned short height, unsigned short po
     new_wall->height = height;
     new_wall->pos_x = pos_x;
     new_wall->pos_y = pos_y;
-    new_wall->sprite = NULL; // Inicializa o sprite como NULL
+    new_wall->sprite = NULL; 
+    new_wall->type = WALL_NORMAL; 
+    new_wall->active = 1;         
+    new_wall->was_stepped = 0;    
     return new_wall;
 } 
 
@@ -32,6 +35,8 @@ void get_sprite_wall(wall* element, const char* sprite_path){
 }
 
 void wall_draw(wall* element, float camera_x, float camera_y){
+    if (element->active == 0) return; // SE NÃO ESTIVER ATIVA, NÃO DESENHA!
+    
     // Desenha parede com sprite se existir
     float wall1_screen_x = element->pos_x - camera_x;
     float wall1_screen_y = element->pos_y - camera_y;
@@ -49,12 +54,13 @@ void wall_draw(wall* element, float camera_x, float camera_y){
                             wall1_screen_x + element->width/2, wall1_screen_y + element->height/2, 
                             al_map_rgb(255, 255, 0), 3);
     }
-    printf("desenhando parede em x: %.2d y: %.2d\n", element->pos_x, element->pos_y);
 }
 
 // Função para verificar colisão entre PLAYER (Square) e PAREDE (Wall)
 int check_collision_wall(square *player, wall *w) {
-    
+    if (w->active == 0) return 0; // SE NÃO ESTIVER ATIVA, NÃO TEM COLISÃO (O player atravessa)
+
+
     float p_esq   = player->x - player->width/2.0f;
     float p_dir   = player->x + player->width/2.0f;
     float p_cima  = player->y - player->heigth/2.0f;

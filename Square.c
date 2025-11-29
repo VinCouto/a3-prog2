@@ -38,6 +38,7 @@ square* square_create(int heigth, int width, unsigned char face, float x, float 
 	new_square->sprite = NULL;  // Sprite inicialmente vazio
 	new_square->control = joystick_create();																											//Insere o elemento de controle do quadrado
 	new_square->invincibility_timer = 0; // Inicializa o contador de invencibilidade
+    new_square->original_height = heigth;  // NOVO: guarda altura original
     return new_square;																																	//Retorna o novo quadrado
 }
 
@@ -47,27 +48,31 @@ void square_move(square *element, char steps, unsigned char trajectory, float ma
 	else if (trajectory == 1){ if ((element->x + steps*SQUARE_STEP) + element->width/2 <= max_x) element->x = element->x + steps*SQUARE_STEP;}			//Verifica se a movimentação para a direita é desejada e possível; se sim, efetiva a mesma
 	else if (trajectory == 2){ if ((element->y - steps*SQUARE_STEP) - element->heigth/2 >= 0) element->y = element->y - steps*SQUARE_STEP;}				//Verifica se a movimentação para cima é desejada e possível; se sim, efetiva a mesma
 	else if (trajectory == 3){ if ((element->y + steps*SQUARE_STEP) + element->heigth/2 <= max_y) element->y = element->y + steps*SQUARE_STEP;}			//Verifica se a movimentação para baixo é desejada e possível; se sim, efetiva a mesma
-	else if (trajectory == 4 ){
-        
-        // Só permite alterar agachamento se NÃO estiver no ar (idle != 2)
-        if (element->idle != 2) {
-            
-            // Se já está agachado (1), levanta
-            if(element->idle == 1) {
-                printf("levantando\n");
-                element->heigth = element->heigth * 2; // Restaura altura
-                element->idle = 0;                     // Estado: Em pé
-                element->control->ctr = 0;
-            } 
-            // Se está em pé (0) e apertou o botão, agacha
-            else if(element->control->ctr == 1 && element->idle == 0){
-                printf("agachando\n");
-                element->heigth = element->heigth / 2; // Diminui altura
-                element->idle = 1;                     // Estado: Agachado
-                element->control->ctr = 0;
-            }  
-        }
+else if (trajectory == 4 ){
+    // Só permite alterar agachamento se NÃO estiver no ar (idle != 2)
+    if (element->idle != 2) {
+
+        // Se está em pé (0) e apertou o botão, agacha
+        if(element->control->ctr == 1 && element->idle == 0 && element->control->ctr_pressed == 0){
+            printf("agachando\n");
+            element->heigth = element->original_height / 2;  // Usa original_height!
+            element->body_box.height = element->heigth;
+            element->idle = 1;
+            element->control->ctr = 0; // Reseta o estado do botão
+            element->control->ctr_pressed = 1; // Marca que o botão foi processado
+        } 
+        // Se já está agachado (1) e NÃO está apertando CTR, levanta
+        else if(element->control->ctr == 1 && element->control->ctr_pressed == 1){
+            printf("levantando\n");
+            element->heigth = element->original_height;  // Restaura para original
+            element->body_box.height = element->heigth;
+            element->idle = 0;
+            element->control->ctr = 0; // Reseta o estado do botão
+            element->control->ctr_pressed = 0; // Reseta o processamento do botão
+        }  
+
     }
+}
 
 }
 

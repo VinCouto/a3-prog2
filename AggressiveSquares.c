@@ -26,6 +26,7 @@ wall* check_collision_map(square *p, wall **walls, int num_walls) {
     for (int i = 0; i < num_walls; i++) {
         if (walls[i] != NULL) {
             if (check_collision_wall(p, walls[i])) {
+								printf("colidiu com parede %d\n", i);
                 return walls[i]; // Retorna a parede específica que causou colisão
             }
         }
@@ -209,6 +210,7 @@ void update_physics(square *player, wall **walls, int num_walls) {
 
     // 3. Verifica colisão Vertical (Chão ou Teto)
     wall* hit_wall = check_collision_map(player, walls, num_walls);
+		printf("hit_wall = %p\n", hit_wall);
     
     if (hit_wall != NULL) {
         
@@ -246,16 +248,10 @@ void update_physics(square *player, wall **walls, int num_walls) {
 
 int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){																																//Função que atualiza o inimigo no jogo
 		
-		perror("dentro do update inimigo");
 		al_draw_text(font, al_map_rgb(255,255,255), 400, 75, 0, "Enemy HP:");
-		perror("dentro do update inimigo depois do draw text");
 		char hp_str[4];
-		perror("dentro do update inimigo antes d criar o char do hp");
 		sprintf(hp_str, "%d", enemy->hp);
-		perror("dentro do update inimigo dps d criar o char do hp");
 		al_draw_text(font, al_map_rgb(255,255,255), 500, 75, 0, hp_str);
-
-		perror("atualizando inimigo\n");
 
 		if(collision_2D(enemy, player_1)){
 			if (player_1->invincibility_timer == 0) {
@@ -274,16 +270,13 @@ int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){										
 
 		}
 		
-		perror("checando kill inimigo\n");
 
 		if(check_kill(enemy))
 			enemy->hp--;
-		perror("atualizei vida inimigo\n");
 
 		int steps = (rand()%6);
 		int trajetory = (rand()%2);
 		int move = rand()%11;
-		perror("decidindo movimento inimigo\n");
 		if(!move)
 			square_move(enemy,steps, trajetory, X_BACKGROUND, Y_BACKGROUND);
 
@@ -293,7 +286,30 @@ int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){										
 			return 1;
 }
 
-
+void update_vanishing_platforms(square *player, wall **walls, int num_walls) {
+    for (int i = 0; i < num_walls; i++) {
+        if (walls[i] != NULL && walls[i]->active == 1 && walls[i]->type == WALL_VANISHING) {
+            printf("checando plataforma %d\n", i);
+						printf("was_stepped = %d\n", walls[i]->was_stepped);
+						printf("active = %d\n", walls[i]->active);
+            // Verifica se o player está tocando nela AGORA
+					
+						//printf("checando plataforma %d: touching = %d\n", i, is_touching);
+            if (check_collision_wall(player, walls[i])) {
+                // Se tocou, marca que foi pisada
+                walls[i]->was_stepped = 1;
+            } 
+            else {
+                // Se NÃO está tocando, mas JÁ FOI pisada antes...
+                if (walls[i]->was_stepped == 1) {
+                    // ...Significa que o player saiu de cima!
+                    walls[i]->active = 0; // DESAPARECE!
+                    printf("Plataforma %d desapareceu!\n", i);
+                }
+            }
+        }
+    }
+}
 
 int main(){
 	
@@ -376,6 +392,10 @@ int main(){
 			obstacle_count++;
 			get_sprite_obstacle(map_obstacles[4], "bomba.png");
 
+			map_obstacles[5] = obstacle_create(3150, 1190 ,300 , 100, "varal.png", 1, 10.0f);
+			obstacle_count++;
+			get_sprite_obstacle(map_obstacles[5], "varal.png");
+
 			wall* map_walls[MAX_WALLS];
 			
 			// Inicializa tudo como NULL para segurança
@@ -454,11 +474,52 @@ int main(){
 			wall_count++;
 			get_sprite_wall(map_walls[18], "plataforma1.png");
 
+			map_walls[19] = wall_create(50, 50, 1210, 875);
+			wall_count++;
+			get_sprite_wall(map_walls[19], "plataforma1.png");
+
+			map_walls[20] = wall_create(50, 50, 1475, 675);
+			wall_count++;
+			get_sprite_wall(map_walls[20], "plataforma1.png");
+
+			map_walls[21] = wall_create(50, 50, 1750, 875);
+			wall_count++;
+			get_sprite_wall(map_walls[21], "plataforma1.png");
+			
+			map_walls[22] = wall_create(120, 40, 1335, 770);
+			wall_count++;
+			map_walls[22]->type = WALL_VANISHING; // Define como plataforma que desaparece
+			get_sprite_wall(map_walls[22], "plataformaquebravel.png");
+
+			map_walls[23] = wall_create(3000, 50, 3300, 1275);
+			wall_count++;
+
+			map_walls[24] = wall_create(100, 100, 3150, 450);
+			wall_count++;
+			get_sprite_wall(map_walls[24], "plataforma1.png");
+
+			map_walls[25] = wall_create(32, 100, 3216, 350);
+			wall_count++;
+			get_sprite_wall(map_walls[25], "plataforma2.png");
+
+			map_walls[26] = wall_create(50, 50, 3375, 300);
+			wall_count++;
+			get_sprite_wall(map_walls[26], "plataforma1.png");
+
+			map_walls[27] = wall_create(50, 50, 3350, 475);
+			wall_count++;
+			get_sprite_wall(map_walls[27], "plataforma1.png");
+
+			map_walls[28] = wall_create(50, 50, 3525, 400);
+			wall_count++;
+			get_sprite_wall(map_walls[28], "plataforma1.png");
+
 			for(int i = 2; i<= 5; i++){
 				if(map_walls[i]){
 					get_sprite_wall(map_walls[i], "plataforma1.png");
 				}
 			}
+			
 
 			int map_width = al_get_bitmap_width(background); // Pega a largura real do mapa
 			int map_height = al_get_bitmap_height(background); // Pega a altura real do mapa
@@ -475,9 +536,7 @@ int main(){
 			SpawnTrigger enemy_spawn = { 0.0f, 930.0f, 50.0f, 100.0f, 0 }; // ajustar conforme posição da plataforma (x,y,w,h)
 			square* enemy = NULL; // não criar ainda
 
-
 		while(1){																																																//Laço servidor do jogo
-			printf("dentro do loop\n");
 			
 			al_wait_for_event(queue, &event);																																									//Função que captura eventos da fila, inserindo os mesmos na variável de eventos
 				if (p1k){																																													//Verifica se algum jogador foi morto 																																						//Limpe a tela atual para um fundo preto
@@ -493,7 +552,6 @@ int main(){
 				else{																																																//Se nenhum quadrado morreu
 					if (event.type == 30){																																											//O evento tipo 30 indica um evento de relógio, ou seja, verificação se a tela deve ser atualizada (conceito de FPS)	
 						
-						printf("dentro do evento padrao\n");
 						camera_x = (player_1->x - X_SCREEN / 2);
 						camera_y = (player_1->y - Y_SCREEN / 2) - 150 ;
 
@@ -539,16 +597,11 @@ int main(){
 							draw_obstacle(map_obstacles[i], camera_x, camera_y);
 						}
 
-						printf("desenhei os obstaculos\n");
 
- 
 						for(int i = 1; i < wall_count; i++){
 							wall_draw(map_walls[i], camera_x, camera_y);
 						}
 
-						//if (check_hitbox_collision(player_1, player_1->body_box, enemy, enemy->body_box)) {
-						// Player encostou no corpo do inimigo -> Toma Dano
-						//}
 
 						
 						if (!enemy && !enemy_spawn.triggered) {
@@ -570,11 +623,8 @@ int main(){
 								enemy_spawn.triggered = 1; // evita spawn repetido
 							}
 						}
-						
-						printf("verifiquei spawn inimigo\n");
 
-						
-						printf("verifiquei hitbox\n");
+
 
 						int debug_mode = 0;
 						if(event.type == 10 && event.keyboard.keycode == ALLEGRO_KEY_H){
@@ -592,26 +642,19 @@ int main(){
 						);
 						}
 
-						printf("debug mode\n");
 						
+						update_vanishing_platforms(player_1, map_walls, MAX_WALLS);
 						update_life(player_1, font, background);
-						printf("atualizei vida\n");
-						
 						update_position(player_1, map_walls, MAX_WALLS);            			
-			            printf("atualizei posicao\n");
-
 						update_physics(player_1, map_walls, MAX_WALLS);
-						printf("atualizei fisica\n");
 
 					if (player_1->invincibility_timer > 0) {
 						player_1->invincibility_timer--;
 					}
 
 					p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
-					printf("verifiquei kill\n");
 
 					if(enemy && update_enemy(enemy, player_1, font)){
-						printf("atualizei inimigo\n");
 						
 						// Calcula posição em tela do inimigo
 						float enemy_screen_x = enemy->x - camera_x;
@@ -631,13 +674,11 @@ int main(){
 											  enemy_screen_x + enemy->width/2, enemy_screen_y + enemy->heigth/2, 
 											  al_map_rgb(0, 255, 0), 3);
 						}
-						printf("desenhei inimigo\n");
 					}
 					
 					float player_screen_x = player_1->x - camera_x;
 					float player_screen_y = player_1->y - camera_y;
 
-					printf("calculei posicao tela\n");
 
 						al_draw_filled_rectangle(
 							player_screen_x - player_1->width/2, 
@@ -646,11 +687,8 @@ int main(){
 							player_screen_y + player_1->heigth/2, 
 							al_map_rgb(255, 0, 0)
 						);
-						
-						printf("desenhei jogador\n");
-						
+												
 						al_flip_display();																																											//Insere as modificações realizadas nos buffers de tela
-						printf("atualizei display\n");
 					}
 					else if ((event.type == 10) || (event.type == 12)){																																				//Verifica se o evento é de botão do teclado abaixado ou levantado
 						if (event.keyboard.keycode == 1) joystick_left(player_1->control);																															//Indica o evento correspondente no controle do primeiro jogador (botão de movimentação à esquerda)

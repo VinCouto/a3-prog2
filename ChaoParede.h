@@ -1,6 +1,8 @@
 #ifndef __CHAO_PAREDE__
 #define __CHAO_PAREDE__
 
+#define WALL_NORMAL 0
+#define WALL_VANISHING 1
 
 #include "Square.h"
 #include <allegro5/allegro5.h>
@@ -11,6 +13,9 @@ struct wall {
     unsigned short pos_x;
     unsigned short pos_y;
     ALLEGRO_BITMAP *sprite;
+    int type;           // 0 = Normal, 1 = Vanishing 
+    int active;         // 1 = Existe, 0 = Desapareceu
+    int was_stepped;    // 0 = Não foi pisada, 1 = Foi pisada
 };
 
 wall* wall_create(unsigned short width, unsigned short height, unsigned short pos_x, unsigned short pos_y);

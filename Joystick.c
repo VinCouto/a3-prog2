@@ -12,6 +12,7 @@ joystick* joystick_create(){														//Implementação da função "joystic
 	element->up = 0;																//Insere o estado de desligado para o botão de movimentação para cima
 	element->down = 0;																//Insere o estado de desligado para o botão de movimentação para baixo
 	element->ctr = 0;																//Insere o estado de desligado para o botão de disparo
+	element->ctr_pressed = 0;														//NOVO: inicializa ctr_pressed como 0
 	return element;																	//Retorna o novo controle
 }
 
