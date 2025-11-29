@@ -22,7 +22,8 @@ wall* wall_create(unsigned short width, unsigned short height, unsigned short po
     new_wall->sprite = NULL; 
     new_wall->type = WALL_NORMAL; 
     new_wall->active = 1;         
-    new_wall->was_stepped = 0;    
+    new_wall->was_stepped = 0;   
+    new_wall->step_timer = 0; 
     return new_wall;
 } 
 
@@ -99,10 +100,11 @@ int check_hitbox_vs_wall(square *p, Hitbox box, wall *w) {
     float w_baixo = w->pos_y + w->height / 2.0f;
 
     // 3. Verificar sobreposição (AABB)
-    if (hb_dir > w_esq && 
-        hb_esq < w_dir && 
-        hb_baixo > w_cima && 
-        hb_cima < w_baixo) {
+    if (hb_dir >= w_esq && 
+        hb_esq <= w_dir && 
+        hb_baixo >= w_cima && 
+        hb_cima <= w_baixo) {
+        printf("Collision detected between hitbox and wall!\n");
         return 1; // Colidiu
     }
 

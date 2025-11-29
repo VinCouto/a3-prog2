@@ -3,6 +3,7 @@
 
 #define WALL_NORMAL 0
 #define WALL_VANISHING 1
+#define STEP_DURATION 15
 
 #include "Square.h"
 #include <allegro5/allegro5.h>
@@ -16,6 +17,7 @@ struct wall {
     int type;           // 0 = Normal, 1 = Vanishing 
     int active;         // 1 = Existe, 0 = Desapareceu
     int was_stepped;    // 0 = Não foi pisada, 1 = Foi pisada
+    int step_timer; 
 };
 
 wall* wall_create(unsigned short width, unsigned short height, unsigned short pos_x, unsigned short pos_y);

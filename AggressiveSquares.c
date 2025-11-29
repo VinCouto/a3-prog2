@@ -11,12 +11,14 @@
 #include "ChaoParede.h"
 #include "menu.h"	
 #include "obstacle.h"
+#include "pit.h"
 
 #define X_SCREEN 920																																														//Definição do tamanho da tela em pixels no eixo x
 #define Y_SCREEN 640																																														//Definição do tamanho da tela em pixels no eixo y
 
-#define MAX_WALLS 30
+#define MAX_WALLS 50
 #define MAX_OBSTACLES 20
+#define MAX_PITS 10
 
 #define X_BACKGROUND 4800																																													//Definição do tamanho da tela em pixels no eixo x
 #define Y_BACKGROUND 1280																																													//Definição do tamanho da tela em
@@ -289,27 +291,34 @@ int update_enemy(square* enemy, square* player_1, ALLEGRO_FONT* font){										
 void update_vanishing_platforms(square *player, wall **walls, int num_walls) {
     for (int i = 0; i < num_walls; i++) {
         if (walls[i] != NULL && walls[i]->active == 1 && walls[i]->type == WALL_VANISHING) {
-            printf("checando plataforma %d\n", i);
-						printf("was_stepped = %d\n", walls[i]->was_stepped);
-						printf("active = %d\n", walls[i]->active);
-            // Verifica se o player está tocando nela AGORA
-					
-						//printf("checando plataforma %d: touching = %d\n", i, is_touching);
-            if (check_collision_wall(player, walls[i])) {
-                // Se tocou, marca que foi pisada
-                walls[i]->was_stepped = 1;
+            
+            int touching = check_hitbox_vs_wall(player, player->body_box, walls[i]);
+            
+            if (touching) {
+                // Player está tocando: incrementa timer
+                walls[i]->step_timer++;
+                printf("Plataforma %d: %d frames de contato\n", i, walls[i]->step_timer);
+                
+                // Se pisou por tempo suficiente
+                if (walls[i]->step_timer >= STEP_DURATION) {
+                    walls[i]->was_stepped = 1;
+                    printf("Plataforma %d marcada como pisada!\n", i);
+                }
             } 
             else {
-                // Se NÃO está tocando, mas JÁ FOI pisada antes...
+                // Player saiu da plataforma
                 if (walls[i]->was_stepped == 1) {
-                    // ...Significa que o player saiu de cima!
-                    walls[i]->active = 0; // DESAPARECE!
-                    printf("Plataforma %d desapareceu!\n", i);
+                    walls[i]->active = 0;
+                    printf("Plataforma %d DESAPARECEU!\n", i);
                 }
+                
+                // Reset timer quando não está tocando
+                walls[i]->step_timer = 0;
             }
         }
     }
 }
+
 
 int main(){
 	
@@ -395,6 +404,33 @@ int main(){
 			map_obstacles[5] = obstacle_create(3150, 1190 ,300 , 100, "varal.png", 1, 10.0f);
 			obstacle_count++;
 			get_sprite_obstacle(map_obstacles[5], "varal.png");
+
+			map_obstacles[6] = obstacle_create(4050, 1050 , 300, 100, "varal.png", 1, 20.0f);
+			obstacle_count++;
+			get_sprite_obstacle(map_obstacles[6], "varal.png");
+
+
+
+			pit* map_pits[MAX_PITS];
+			for(int i=0; i<MAX_PITS; i++)
+				map_pits[i] = NULL;
+			int pit_count = 0;
+
+			// Criar buracos - formato: pit_create(pos_x, pos_y, width, height, respawn_x, respawn_y, damage)
+			map_pits[0] = pit_create(2375, 1280, 50, 10, 2100, 1250, 1);  
+			pit_count++;
+
+			map_pits[1] = pit_create(2550, 1280, 100, 10, 2100, 1250, 1);  // Outro buraco
+			pit_count++;
+
+			map_pits[2] = pit_create(3925, 1280, 100, 10, 3700, 1250, 1);
+			pit_count++;
+
+			map_pits[3] = pit_create(4300, 1280, 300, 10, 3700, 1250, 1);
+			pit_count++;
+
+
+
 
 			wall* map_walls[MAX_WALLS];
 			
@@ -491,7 +527,7 @@ int main(){
 			map_walls[22]->type = WALL_VANISHING; // Define como plataforma que desaparece
 			get_sprite_wall(map_walls[22], "plataformaquebravel.png");
 
-			map_walls[23] = wall_create(3000, 50, 3300, 1275);
+			map_walls[23] = wall_create(550, 50, 2075, 1275);
 			wall_count++;
 
 			map_walls[24] = wall_create(100, 100, 3150, 450);
@@ -513,6 +549,18 @@ int main(){
 			map_walls[28] = wall_create(50, 50, 3525, 400);
 			wall_count++;
 			get_sprite_wall(map_walls[28], "plataforma1.png");
+
+			map_walls[29] = wall_create(100, 50, 2450, 1275);
+			wall_count++;
+
+			map_walls[30] = wall_create(1300, 50, 3250, 1275);
+			wall_count++;
+
+			map_walls[31] = wall_create(225, 50, 4087, 1275);
+			wall_count++;
+
+			map_walls[32] = wall_create(400, 50, 4600, 1275);
+			wall_count++;
 
 			for(int i = 2; i<= 5; i++){
 				if(map_walls[i]){
@@ -599,9 +647,21 @@ int main(){
 
 
 						for(int i = 1; i < wall_count; i++){
+							//if((i != 23) && (i != 29) && (i !=30) && (i != 31) && (i != 32)){ // Pula as paredes do chão
 							wall_draw(map_walls[i], camera_x, camera_y);
+							//}
 						}
 
+						for(int i = 0; i < pit_count; i++){
+								if (map_pits[i] != NULL && check_collision_pit(player_1->x, player_1->y, player_1->width, player_1->heigth, map_pits[i])) {
+										
+										if (player_1->invincibility_timer == 0) {
+												printf("Player caiu em buraco %d!\n", i);
+												apply_pit_effect(player_1, map_pits[i]);
+												player_1->invincibility_timer = 60; // Invencibilidade após cair
+										}
+								}
+						}
 
 						
 						if (!enemy && !enemy_spawn.triggered) {
@@ -643,14 +703,14 @@ int main(){
 						}
 
 						
-						update_vanishing_platforms(player_1, map_walls, MAX_WALLS);
 						update_life(player_1, font, background);
 						update_position(player_1, map_walls, MAX_WALLS);            			
 						update_physics(player_1, map_walls, MAX_WALLS);
-
-					if (player_1->invincibility_timer > 0) {
-						player_1->invincibility_timer--;
-					}
+						
+						update_vanishing_platforms(player_1, map_walls, MAX_WALLS);
+						if (player_1->invincibility_timer > 0) {
+							player_1->invincibility_timer--;
+						}
 
 					p1k = check_kill(player_1);																																						//Verifica se o primeiro jogador matou o segundo jogador
 
@@ -706,11 +766,15 @@ int main(){
 			al_destroy_display(disp);
 			al_destroy_timer(timer);
 			al_destroy_event_queue(queue);
+			for(int i = 0; i < pit_count; i++){
+ 			   if (map_pits[i]) pit_destroy(map_pits[i]);
+			}
 			square_destroy(player_1);
 			if (enemy) {
 				if (enemy->sprite) al_destroy_bitmap(enemy->sprite);
 				free(enemy);
 			}
+
 		
 			break;
 		}
